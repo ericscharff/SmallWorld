@@ -13,25 +13,31 @@ import java.awt.event.*;
 import java.io.*;
 import java.applet.*;
 import javax.swing.*;
+import java.net.*;
 
-public class SmallWorld extends JFrame {
+public class SmallWorld extends JApplet {
 	static public void main (String [] args) {
-		world = new SmallWorld(args);
+		new SmallWorld(args);
 	}
 
-	private static SmallWorld world;
 	private SmallInterpreter theInterpreter = new SmallInterpreter();
 
-	public SmallWorld(String [ ] args) {
+		// used only by applet
+	public void init () { 
+		setContentPane(buildPanel());
+		// now read the image
+		output.setText("Initializing image: wait ...."); 
+		try {
+			InputStream fin = new URL(getCodeBase(), "image").openStream();
+			readImage(fin);
+		} catch(Exception e) {
+			output.setText("Applet exception " + e);
+		}
+		repaint();
+	}
 
-		setTitle("Small World");
-		setSize(200, 150);
-		addWindowListener(new WindowAdapter ( ){
-			public void windowClosing (WindowEvent e) 
-				{ System.exit(0); } });
-
+	private JPanel buildPanel() {
 		JPanel p = new JPanel();
-		getContentPane().add(p);
 		p.setLayout(new GridLayout(4, 1));
 		JButton browserButton = new JButton("class browser");
 		browserButton.addActionListener(
@@ -51,38 +57,55 @@ public class SmallWorld extends JFrame {
 			}
 		});
 		p.add(output);
-
-		// now read the image
-		show();
-		output.setText("Initializing image: wait ...."); repaint();
-		if (args.length > 0)
-			readImage(args[0]);
-		else
-			readImage("image");
-		repaint();
+		return p;
 	}
 
 	private JTextField output = new JTextField();
-	
-	private void readImage(String name) {
+
+	public SmallWorld() { } // used by applet
+
+	public SmallWorld(String [ ] args) { // used by application
+
+		JFrame world = new JFrame();
+		world.setTitle("Small World");
+		world.setSize(200, 150);
+		world.addWindowListener(new WindowAdapter ( ){
+			public void windowClosing (WindowEvent e) 
+				{ System.exit(0); } });
+
+		world.getContentPane().add(buildPanel());
+
+		// now read the image
+		world.show();
+		output.setText("Initializing image: wait ...."); 
+		world.repaint();
 		try {
-			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(name));
-			theInterpreter = new SmallInterpreter();
-			//theInterpreter = (SmallInterpreter) ois.readObject();
-			// now read object by object
-			theInterpreter.nilObject = (SmallObject) ois.readObject();
-			theInterpreter.trueObject = (SmallObject) ois.readObject();
-			theInterpreter.falseObject = (SmallObject) ois.readObject();
-			theInterpreter.smallInts = (SmallInt []) ois.readObject();
-			theInterpreter.ArrayClass = (SmallObject) ois.readObject();
-			theInterpreter.BlockClass = (SmallObject) ois.readObject();
-			theInterpreter.ContextClass = (SmallObject) ois.readObject();
-			theInterpreter.IntegerClass = (SmallObject) ois.readObject();
-			output.setText("image initialized");
-			done = true;
+			if (args.length > 0)
+				readImage(new FileInputStream(args[0]));
+			else
+				readImage(new FileInputStream("image"));
 		} catch (Exception e) {
-			output.setText("received I/O exception " + e);
+			output.setText("caught exception:" + e);
 		}
+		world.repaint();
+	}
+
+	
+	private void readImage(InputStream name) throws Exception {
+		ObjectInputStream ois = new ObjectInputStream(name);
+		theInterpreter = new SmallInterpreter();
+		//theInterpreter = (SmallInterpreter) ois.readObject();
+		// now read object by object
+		theInterpreter.nilObject = (SmallObject) ois.readObject();
+		theInterpreter.trueObject = (SmallObject) ois.readObject();
+		theInterpreter.falseObject = (SmallObject) ois.readObject();
+		theInterpreter.smallInts = (SmallInt []) ois.readObject();
+		theInterpreter.ArrayClass = (SmallObject) ois.readObject();
+		theInterpreter.BlockClass = (SmallObject) ois.readObject();
+		theInterpreter.ContextClass = (SmallObject) ois.readObject();
+		theInterpreter.IntegerClass = (SmallObject) ois.readObject();
+		output.setText("image initialized");
+		done = true;
 	}
 
 	private boolean done = false;
@@ -115,7 +138,8 @@ public class SmallWorld extends JFrame {
 			try {
 			theInterpreter.execute(ctx, null, null);
 			} catch(Exception ex) {
-System.out.println("caught exeception " + ex);
+				output.setText("exception: " + ex);
+				repaint();
 			}
 		}
 		}
