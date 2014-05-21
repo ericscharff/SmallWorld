@@ -363,7 +363,7 @@ class SmallInterpreter implements Serializable {
         // System.out.println("Arguments " + arguments);
         // System.out.println("Arguments receiver " + arguments.data[0]);
         // System.out.println("Arguments class " + arguments.data[0].objClass);
-            high = (arguments.data[0].objClass.hashCode() + returnedValue.hashCode()) % 197;
+            high = Math.abs(arguments.data[0].objClass.hashCode() + returnedValue.hashCode()) % 197;
             if ((selectorCache[high] != null) && (selectorCache[high] == returnedValue)
                 && (classCache[high] == arguments.data[0].objClass)) {
               method = methodCache[high];
