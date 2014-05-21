@@ -92,7 +92,7 @@ public class SmallWorld extends JApplet {
       if (args.length > 0) {
         readImage(new FileInputStream(args[0]));
       } else {
-        readImage(new FileInputStream("image"));
+        readImage(getClass().getResourceAsStream("/image"));
       }
     } catch (Exception e) {
       output.setText("caught exception:" + e);
