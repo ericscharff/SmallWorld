@@ -1,0 +1,21 @@
+EVAL Class addNewClass: ( Object subclass: 'TextPanel' variables: '' classVariables: '')
+METHOD TextPanel
+getSelectedText
+   ^ <72 String self>
+!
+METHOD TextPanel
+getText
+   ^ <71 String self>
+!
+METHOD TextPanel
+setText: t
+   <79 self t>
+!
+META TextPanel
+new: t
+   ^ < 70 self t>
+!
+META TextPanel
+textField
+   ^ <69 self>
+!
