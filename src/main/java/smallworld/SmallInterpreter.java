@@ -1,9 +1,4 @@
-/*
-   Little Smalltalk Interpreter written in Java
-   Written by Tim Budd, budd@acm.org
-
-   Version 0.8 (November 2002)
-*/
+package smallworld;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -22,20 +17,12 @@ import java.awt.event.MouseMotionAdapter;
 import java.awt.image.BufferedImage;
 import java.io.DataInput;
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map.Entry;
-import java.util.TreeMap;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -57,114 +44,13 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.JTextComponent;
 
-class SmallObject implements Serializable {
-  public SmallObject objClass;
-  public SmallObject[] data;
-
-  public SmallObject() {
-    objClass = null;
-    data = null;
-  }
-
-  public SmallObject(SmallObject cl, int size) {
-    objClass = cl;
-    data = new SmallObject[size];
-  }
-
-  public SmallObject copy(SmallObject cl) {
-    return this;
-  }
-}
-
-
-class SmallInt extends SmallObject {
-  public int value;
-
-  public SmallInt(SmallObject IntegerClass, int v) {
-    super(IntegerClass, 0);
-    value = v;
-  }
-
-  public String toString() {
-    return "SmallInt: " + value;
-  }
-}
-
-
-class SmallByteArray extends SmallObject {
-  public byte[] values;
-
-  public SmallByteArray(SmallObject cl, int size) {
-    super(cl, 0);
-    values = new byte[size];
-  }
-
-  public SmallByteArray(SmallObject cl, String text) {
-    super(cl, 0);
-    int size = text.length();
-    values = new byte[size];
-    for (int i = 0; i < size; i++)
-      values[i] = (byte) text.charAt(i);
-  }
-
-  public String toString() {
-    // we assume its a string, tho not always true...
-    return new String(values);
-  }
-
-  public SmallObject copy(SmallObject cl) {
-    SmallByteArray newObj = new SmallByteArray(cl, values.length);
-    for (int i = 0; i < values.length; i++) {
-      newObj.values[i] = values[i];
-    }
-    return newObj;
-  }
-}
-
-
-class SmallJavaObject extends SmallObject {
-  public SmallJavaObject(SmallObject cls, Object v) {
-    super(cls, 0);
-    value = v;
-  }
-
-  public Object value;
-}
-
-
-class SmallException extends Exception {
-  SmallException(String gripe, SmallObject c) {
-    super(gripe);
-    context = c;
-  }
-
-  public SmallObject context;
-}
-
-
-class Sema {
-  public synchronized SmallObject get() {
-    if (!hasBeenSet) {
-      try {
-        wait();
-      } catch (Exception e) {
-        System.out.println("Sema got exception " + e);
-      }
-    }
-    return value;
-  }
-
-  public synchronized void set(SmallObject v) {
-    value = v;
-    hasBeenSet = true;
-    notifyAll();
-  }
-
-  private SmallObject value;
-  private boolean hasBeenSet = false;
-}
-
-
+/**
+ * Little Smalltalk Interpreter written in Java.
+ *
+ * Written by Tim Budd, budd@acm.org
+ *
+ * Version 0.8 (November 2002)
+ */
 class SmallInterpreter implements Serializable {
 
   // global constants
@@ -268,7 +154,7 @@ class SmallInterpreter implements Serializable {
         if (high == 0) {
           high = low;
           // convert to positive int
-          low = (int) code[bytePointer++] & 0x0FF;
+          low = code[bytePointer++] & 0x0FF;
         }
 
         switch (high) {
@@ -335,7 +221,7 @@ class SmallInterpreter implements Serializable {
           case 12: // PushBlock
             // low is argument location
             // next byte is goto value
-            high = (int) code[bytePointer++] & 0x0FF;
+            high = code[bytePointer++] & 0x0FF;
             returnedValue = new SmallObject(BlockClass, 10);
             tempa = returnedValue.data;
             tempa[0] = contextData[0]; // share method
@@ -403,10 +289,10 @@ class SmallInterpreter implements Serializable {
               literals = method.data[2].data;
             }
             returnedValue = literals[low]; // message selector
-        // System.out.println("Sending " + returnedValue);
-        // System.out.println("Arguments " + arguments);
-        // System.out.println("Arguments receiver " + arguments.data[0]);
-        // System.out.println("Arguments class " + arguments.data[0].objClass);
+            // System.out.println("Sending " + returnedValue);
+            // System.out.println("Arguments " + arguments);
+            // System.out.println("Arguments receiver " + arguments.data[0]);
+            // System.out.println("Arguments class " + arguments.data[0].objClass);
             high = Math.abs(arguments.data[0].objClass.hashCode() + returnedValue.hashCode()) % 197;
             if ((selectorCache[high] != null) && (selectorCache[high] == returnedValue)
                 && (classCache[high] == arguments.data[0].objClass)) {
@@ -490,7 +376,7 @@ class SmallInterpreter implements Serializable {
           }
 
           case 13: // Do Primitive, low is arg count, next byte is number
-            high = (int) code[bytePointer++] & 0x0FF;
+            high = code[bytePointer++] & 0x0FF;
             switch (high) {
 
               case 1: // object identity
@@ -650,7 +536,7 @@ class SmallInterpreter implements Serializable {
                 low = ((SmallInt) stack[--stackTop]).value;
                 returnedValue = stack[--stackTop];
                 SmallByteArray baa = (SmallByteArray) returnedValue;
-                low = (int) baa.values[low - 1] & 0x0FF;
+                low = baa.values[low - 1] & 0x0FF;
                 returnedValue = newInteger(low);
                 break;
 
@@ -837,7 +723,7 @@ class SmallInterpreter implements Serializable {
 
               case 50: // integer into float
                 low = ((SmallInt) stack[--stackTop]).value;
-                returnedValue = new SmallJavaObject(stack[--stackTop], new Double((double) low));
+                returnedValue = new SmallJavaObject(stack[--stackTop], new Double(low));
                 break;
 
               case 51: { // addition of float
@@ -893,7 +779,7 @@ class SmallInterpreter implements Serializable {
                 break;
 
               case 59: // print of float
-                returnedValue = (SmallJavaObject) stack[--stackTop];
+                returnedValue = stack[--stackTop];
                 returnedValue = new SmallByteArray(stack[--stackTop], String.valueOf(
                     ((Double) ((SmallJavaObject) returnedValue).value).doubleValue()));
                 break;
@@ -972,6 +858,7 @@ class SmallInterpreter implements Serializable {
                 final JButton jb = new JButton(stack[--stackTop].toString());
                 returnedValue = new SmallJavaObject(stack[--stackTop], jb);
                 jb.addActionListener(new ActionListener() {
+                  @Override
                   public void actionPerformed(ActionEvent e) {
                     new ActionThread(action, myThread).start();
                   }
@@ -1008,6 +895,7 @@ class SmallInterpreter implements Serializable {
                 jl.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
                 returnedValue = new SmallJavaObject(returnedValue, new JScrollPane(jl));
                 jl.addListSelectionListener(new ListSelectionListener() {
+                  @Override
                   public void valueChanged(ListSelectionEvent e) {
                     if ((!e.getValueIsAdjusting()) && (jl.getSelectedIndex() >= 0)) {
                       new ActionThread(action, myThread, jl.getSelectedIndex() + 1).start();
@@ -1158,6 +1046,7 @@ class SmallInterpreter implements Serializable {
                 returnedValue = new SmallJavaObject(stack[--stackTop], bar);
                 if (action != nilObject) {
                   bar.addAdjustmentListener(new AdjustmentListener() {
+                    @Override
                     public void adjustmentValueChanged(AdjustmentEvent ae) {
                       new ActionThread(action, myThread, ae.getValue()).start();
                     }
@@ -1171,10 +1060,11 @@ class SmallInterpreter implements Serializable {
                 SmallJavaObject pan = (SmallJavaObject) stack[--stackTop];
                 Object jo = pan.value;
                 if (jo instanceof JScrollPane) {
-                  jo = (JComponent) ((JScrollPane) jo).getViewport().getView();
+                  jo = ((JScrollPane) jo).getViewport().getView();
                 }
                 final JComponent jpan = (JComponent) jo;
                 jpan.addMouseListener(new MouseAdapter() {
+                  @Override
                   public void mousePressed(MouseEvent e) {
                     new ActionThread(action, myThread, e.getX(), e.getY()).start();
                   }
@@ -1187,10 +1077,11 @@ class SmallInterpreter implements Serializable {
                 SmallJavaObject pan = (SmallJavaObject) stack[--stackTop];
                 Object jo = pan.value;
                 if (jo instanceof JScrollPane) {
-                  jo = (JComponent) ((JScrollPane) jo).getViewport().getView();
+                  jo = ((JScrollPane) jo).getViewport().getView();
                 }
                 final JComponent jpan = (JComponent) jo;
                 jpan.addMouseListener(new MouseAdapter() {
+                  @Override
                   public void mouseReleased(MouseEvent e) {
                     new ActionThread(action, myThread, e.getX(), e.getY()).start();
                   }
@@ -1203,14 +1094,16 @@ class SmallInterpreter implements Serializable {
                 SmallJavaObject pan = (SmallJavaObject) stack[--stackTop];
                 Object jo = pan.value;
                 if (jo instanceof JScrollPane) {
-                  jo = (JComponent) ((JScrollPane) jo).getViewport().getView();
+                  jo = ((JScrollPane) jo).getViewport().getView();
                 }
                 final JComponent jpan = (JComponent) jo;
                 jpan.addMouseMotionListener(new MouseMotionAdapter() {
+                  @Override
                   public void mouseDragged(MouseEvent e) {
                     new ActionThread(action, myThread, e.getX(), e.getY()).start();
                   }
 
+                  @Override
                   public void mouseMoved(MouseEvent e) {
                     new ActionThread(action, myThread, e.getX(), e.getY()).start();
                   }
@@ -1234,6 +1127,7 @@ class SmallInterpreter implements Serializable {
                 JMenu menu = (JMenu) mo.value;
                 JMenuItem ji = new JMenuItem(text.toString());
                 ji.addActionListener(new ActionListener() {
+                  @Override
                   public void actionPerformed(ActionEvent e) {
                     new ActionThread(action, myThread).start();
                   }
@@ -1381,12 +1275,12 @@ class SmallInterpreter implements Serializable {
                 break;
 
               case 6: // branch
-                low = (int) code[bytePointer++] & 0x0FF;
+                low = code[bytePointer++] & 0x0FF;
                 bytePointer = low;
                 break;
 
               case 7: // branch if true
-                low = (int) code[bytePointer++] & 0x0FF;
+                low = code[bytePointer++] & 0x0FF;
                 returnedValue = stack[--stackTop];
                 if (returnedValue == trueObject) {
                   bytePointer = low;
@@ -1394,7 +1288,7 @@ class SmallInterpreter implements Serializable {
                 break;
 
               case 8: // branch if false
-                low = (int) code[bytePointer++] & 0x0FF;
+                low = code[bytePointer++] & 0x0FF;
                 returnedValue = stack[--stackTop];
                 if (returnedValue == falseObject) {
                   bytePointer = low;
@@ -1402,7 +1296,7 @@ class SmallInterpreter implements Serializable {
                 break;
 
               case 11: // send to super
-                low = (int) code[bytePointer++] & 0x0FF;
+                low = code[bytePointer++] & 0x0FF;
                 // message selector
                 // save old context
                 arguments = stack[--stackTop];
@@ -1472,9 +1366,10 @@ class SmallInterpreter implements Serializable {
       action.data[2].data[argLoc + 1] = newInteger(v2);
     }
 
-    private SmallObject action;
-    private Thread myThread;
+    private final SmallObject action;
+    private final Thread myThread;
 
+    @Override
     public void run() {
       int stksize = action.data[3].data.length;
       action.data[3] = new SmallObject(ArrayClass, stksize); // new stack
@@ -1489,187 +1384,4 @@ class SmallInterpreter implements Serializable {
     }
   }
 
-}
-
-class ImageWriter {
-  private final HashMap<SmallObject, Integer> objectPool;
-  private final TreeMap<Integer, SmallObject> allObjects;
-  private final ArrayList<Integer> roots;
-  private final DataOutputStream out;
-  private int objectIndex;
-  private int numSmallInts;
-
-  public ImageWriter(OutputStream out) {
-    objectPool = new HashMap<>();
-    allObjects = new TreeMap<>();
-    roots = new ArrayList<>();
-    this.out = new DataOutputStream(out);
-    this.objectIndex = 0;
-    this.numSmallInts = 0;
-  }
-
-  public void writeObject(SmallObject obj) {
-    writeObjectImpl(obj);
-    roots.add(objectPool.get(obj));
-  }
-
-  private void writeObjectImpl(SmallObject obj) {
-    if (!objectPool.containsKey(obj)) {
-      objectPool.put(obj, objectIndex);
-      allObjects.put(objectIndex, obj);
-      objectIndex++;
-      writeObjectImpl(obj.objClass);
-      if (obj.data != null) {
-        for (SmallObject child : obj.data) {
-          writeObjectImpl(child);
-        }
-      }
-    }
-  }
-
-  public void writeObject(SmallInt[] ints) {
-    if (numSmallInts > 0) {
-      throw new RuntimeException("Can only write ints one time");
-    }
-    numSmallInts = ints.length;
-    for (SmallInt child : ints) {
-      writeObject(child);
-    }
-  }
-
-  public void finish() throws IOException {
-    // Header, SWST version 0
-    out.writeInt(0x53575354); // 'SWST'
-    out.writeInt(0); // version 0
-    out.writeInt(objectIndex); // object count
-    // First, write the object types
-    // 0 = SmallObject, 1 = SmallInt, 2 = SmallByteArray
-    for (Entry<Integer, SmallObject> entry : allObjects.entrySet()) {
-      SmallObject obj = entry.getValue();
-      if (obj instanceof SmallByteArray) {
-        out.writeByte(2);
-      } else if (obj instanceof SmallInt) {
-        out.writeByte(1);
-      } else if (obj instanceof SmallJavaObject) {
-        throw new RuntimeException("JavaObject serialization not supported");
-      } else {
-        out.writeByte(0);
-      }
-    }
-    // Then, write entries
-    for (Entry<Integer, SmallObject> entry : allObjects.entrySet()) {
-      SmallObject obj = entry.getValue();
-      // Reference to class
-      out.writeInt(objectPool.get(obj.objClass));
-      // data (-1 if none)
-      if (obj.data == null) {
-        out.writeInt(-1);
-      } else {
-        out.writeInt(obj.data.length);
-        for (SmallObject child : obj.data) {
-          out.writeInt(objectPool.get(child));
-        }
-      }
-      if (obj instanceof SmallInt) {
-        out.writeInt(((SmallInt)obj).value);
-      }
-      if (obj instanceof SmallByteArray) {
-        SmallByteArray sba = (SmallByteArray)obj;
-        out.writeInt(sba.values.length);
-        for (byte b : sba.values) {
-          out.writeByte(b);
-        }
-      }
-    }
-    // Write the (special case) count of small integers
-    out.writeInt(numSmallInts);
-    // Finally, write out index of the roots, so they can be streamed back in
-    for (Integer i : roots) {
-      out.writeInt(i);
-    }
-    out.close();
-  }
-}
-
-class ImageReader {
-  private final DataInputStream in;
-  private SmallObject[] objectPool;
-  private int numSmallInts;
-
-  public ImageReader(InputStream in) {
-    this.in = new DataInputStream(in);
-    this.objectPool = null;
-  }
-
-  private void readObjects() throws IOException {
-    if (in.readInt() != 0x53575354) {
-      throw new RuntimeException("Bad magic number");
-    }
-    if (in.readInt() != 0) {
-      throw new RuntimeException("Bad version number");
-    }
-    int objectCount = in.readInt();
-    objectPool = new SmallObject[objectCount];
-    // Read headers to construct placeholder objects
-    for (int i=0; i < objectCount; i++) {
-      int objType = in.readByte();
-      switch (objType) {
-        case 0:
-          objectPool[i] = new SmallObject();
-          break;
-        case 1:
-          objectPool[i] = new SmallInt(null, 0);
-          break;
-        case 2:
-          objectPool[i] = new SmallByteArray(null, 0);
-          break;
-        default:
-          throw new RuntimeException("Unknown object type " + objType);
-      }
-    }
-    // Then fill in the objects
-    for (int i=0; i < objectCount; i++) {
-      SmallObject obj = objectPool[i];
-      obj.objClass = objectPool[in.readInt()];
-      int dataLength = in.readInt();
-      if (dataLength == -1) {
-        obj.data = null;
-      } else {
-        obj.data = new SmallObject[dataLength];
-        for (int j=0; j < dataLength; j++) {
-          obj.data[j] = objectPool[in.readInt()];
-        }
-      }
-      // Type specific data
-      if (obj instanceof SmallInt) {
-        ((SmallInt)obj).value = in.readInt();
-      }
-      if (obj instanceof SmallByteArray) {
-        SmallByteArray sba = (SmallByteArray)obj;
-        int byteLength = in.readInt();
-        sba.values = new byte[byteLength];
-        for (int j=0; j < byteLength; j++) {
-          sba.values[j] = in.readByte();
-        }
-      }
-    }
-    numSmallInts = in.readInt();
-    // Stream now points to the first root
-  }
-
-  public SmallObject readObject() throws IOException {
-    if (objectPool == null) {
-      readObjects();
-    }
-    // InputStream should now point to the index of a root
-    return objectPool[in.readInt()];
-  }
-
-  public SmallInt[] readSmallInts() throws IOException {
-    SmallInt[] ints = new SmallInt[numSmallInts];
-    for (int i=0; i < numSmallInts; i++) {
-      ints[i] = (SmallInt)readObject();
-    }
-    return ints;
-  }
 }

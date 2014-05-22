@@ -1,22 +1,12 @@
-/*
-	SmallWorld -- Little Smalltalk in Java
-		runs as application
-	Written by Tim Budd, budd@acm.org
-	November 2004
-
-	Version 0.9 November 2004
-	Version 0.8 November 2002
-*/
+package smallworld;
 
 import java.awt.GridLayout;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.net.URL;
 
 import javax.swing.JApplet;
@@ -33,6 +23,7 @@ public class SmallWorld extends JApplet {
   private SmallInterpreter theInterpreter = new SmallInterpreter();
 
   // used only by applet
+  @Override
   public void init() {
     setContentPane(buildPanel());
     // now read the image
@@ -58,6 +49,7 @@ public class SmallWorld extends JApplet {
     JButton quitButton = new JButton("quit");
     p.add(quitButton);
     quitButton.addActionListener(new ActionListener() {
+      @Override
       public void actionPerformed(ActionEvent e) {
         // maybe later do something more intelligent
         System.exit(0);
@@ -67,7 +59,7 @@ public class SmallWorld extends JApplet {
     return p;
   }
 
-  private JTextField output = new JTextField();
+  private final JTextField output = new JTextField();
 
   public SmallWorld() {} // used by applet
 
@@ -77,6 +69,7 @@ public class SmallWorld extends JApplet {
     world.setTitle("Small World");
     world.setSize(200, 150);
     world.addWindowListener(new WindowAdapter() {
+      @Override
       public void windowClosing(WindowEvent e) {
         System.exit(0);
       }
@@ -123,8 +116,9 @@ public class SmallWorld extends JApplet {
       task = t;
     }
 
-    private String task;
+    private final String task;
 
+    @Override
     public void actionPerformed(ActionEvent e) {
       if (!done) {
         return; // not ready yet
