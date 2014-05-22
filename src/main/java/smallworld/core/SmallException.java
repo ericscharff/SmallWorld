@@ -1,4 +1,4 @@
-package smallworld;
+package smallworld.core;
 
 class SmallException extends Exception {
   public SmallObject context;

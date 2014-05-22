@@ -1,4 +1,4 @@
-package smallworld;
+package smallworld.core;
 
 class SmallByteArray extends SmallObject {
   public byte[] values;

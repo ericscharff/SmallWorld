@@ -1,4 +1,4 @@
-package smallworld;
+package smallworld.core;
 
 class SmallJavaObject extends SmallObject {
   public Object value;

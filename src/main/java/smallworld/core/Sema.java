@@ -1,4 +1,4 @@
-package smallworld;
+package smallworld.core;
 
 class Sema {
   private boolean hasBeenSet = false;

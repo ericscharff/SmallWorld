@@ -1,4 +1,4 @@
-package smallworld;
+package smallworld.core;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

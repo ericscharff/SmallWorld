@@ -1,4 +1,4 @@
-package smallworld;
+package smallworld.core;
 
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;

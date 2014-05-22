@@ -1,4 +1,4 @@
-package smallworld;
+package smallworld.core;
 
 class SmallInt extends SmallObject {
   public int value;

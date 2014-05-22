@@ -1,4 +1,4 @@
-package smallworld;
+package smallworld.core;
 
 class SmallObject {
   public SmallObject[] data;

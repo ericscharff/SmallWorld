@@ -10,7 +10,7 @@
     http://web.engr.oregonstate.edu/~budd/SmallWorld/ReadMe.html
 
     To run the main class:
-      mvn compile exec:java -Dexec.mainClass="smallworld.SmallWorld"
+      mvn compile exec:java -Dexec.mainClass="smallworld.core.SmallWorld"
     To build a standalone jar file:
       mvn clean compile assembly:single
   -->
@@ -40,7 +40,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>smallworld.SmallWorld</mainClass>
+              <mainClass>smallworld.core.SmallWorld</mainClass>
             </manifest>
           </archive>
           <descriptorRefs>
