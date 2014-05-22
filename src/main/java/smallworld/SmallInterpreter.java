@@ -52,6 +52,7 @@ import javax.swing.text.JTextComponent;
  * Version 0.8 (November 2002)
  */
 class SmallInterpreter implements Serializable {
+  private static final boolean DEBUG = false;
 
   // global constants
   public SmallObject nilObject;
@@ -138,7 +139,6 @@ class SmallInterpreter implements Serializable {
       SmallObject[] stack = contextData[3].data;
       int stackTop = ((SmallInt) contextData[5]).value;
       SmallObject returnedValue = null;
-      SmallObject temp;
       SmallObject[] tempa;
 
       // everything else can be null for now
@@ -891,7 +891,7 @@ class SmallInterpreter implements Serializable {
                 final SmallObject action = stack[--stackTop];
                 SmallObject data = stack[--stackTop];
                 returnedValue = stack[--stackTop];
-                final JList jl = new JList(data.data);
+                final JList<SmallObject> jl = new JList<>(data.data);
                 jl.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
                 returnedValue = new SmallJavaObject(returnedValue, new JScrollPane(jl));
                 jl.addListSelectionListener(new ListSelectionListener() {
@@ -1011,7 +1011,7 @@ class SmallInterpreter implements Serializable {
                   jl = ((JScrollPane) jl).getViewport().getView();
                 }
                 if (jl instanceof JList) {
-                  returnedValue = newInteger(((JList) jl).getSelectedIndex() + 1);
+                  returnedValue = newInteger(asJList(jl).getSelectedIndex() + 1);
                 } else if (jl instanceof JScrollBar) {
                   returnedValue = newInteger(((JScrollBar) jl).getValue());
                 } else {
@@ -1029,8 +1029,9 @@ class SmallInterpreter implements Serializable {
                   jl = ((JScrollPane) jl).getViewport().getView();
                 }
                 if (jl instanceof JList) {
-                  ((JList) jl).setListData(data.data);
-                  ((JList) jl).repaint();
+                  JList<SmallObject> jList = asJList(jl);
+                  jList.setListData(data.data);
+                  jList.repaint();
                 }
               }
                 break;
@@ -1328,7 +1329,9 @@ class SmallInterpreter implements Serializable {
       } // end of inner loop
 
       if ((context == null) || (context == nilObject)) {
-        // System.out.println("lookups " + lookup + " cached " + cached);
+        if (DEBUG) {
+          System.out.println("lookups " + lookup + " cached " + cached);
+        }
         return returnedValue;
       }
       contextData = context.data;
@@ -1338,6 +1341,11 @@ class SmallInterpreter implements Serializable {
       contextData[5] = newInteger(stackTop);
     }
   } // end of outer loop
+
+  @SuppressWarnings("unchecked")
+  private JList<SmallObject> asJList(Object obj) {
+    return (JList<SmallObject>) obj;
+  }
 
   private class ActionThread extends Thread {
     public ActionThread(SmallObject block, Thread myT) {

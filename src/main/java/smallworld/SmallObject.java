@@ -14,7 +14,7 @@ class SmallObject {
     data = new SmallObject[size];
   }
 
-  public SmallObject copy(SmallObject cl) {
+  public SmallObject copy(@SuppressWarnings("unused") SmallObject cl) {
     return this;
   }
 }

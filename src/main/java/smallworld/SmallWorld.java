@@ -78,7 +78,7 @@ public class SmallWorld extends JApplet {
     world.getContentPane().add(buildPanel());
 
     // now read the image
-    world.show();
+    world.setVisible(true);
     output.setText("Initializing image: wait ....");
     world.repaint();
     try {
