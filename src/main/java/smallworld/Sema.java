@@ -4,13 +4,9 @@ class Sema {
   private boolean hasBeenSet = false;
   private SmallObject value;
 
-  public synchronized SmallObject get() {
+  public synchronized SmallObject get() throws InterruptedException {
     if (!hasBeenSet) {
-      try {
-        wait();
-      } catch (Exception e) {
-        System.out.println("Sema got exception " + e);
-      }
+      wait();
     }
     return value;
   }

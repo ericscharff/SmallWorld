@@ -52,8 +52,6 @@ import javax.swing.text.JTextComponent;
  * Version 0.8 (November 2002)
  */
 class SmallInterpreter implements Serializable {
-  private static final boolean DEBUG = false;
-
   // global constants
   public SmallObject ArrayClass;
   public SmallObject BlockClass;
@@ -102,7 +100,7 @@ class SmallInterpreter implements Serializable {
     SmallObject[] contextData = context.data;
 
     outerLoop: while (true) {
-
+      boolean debug = false;
       SmallObject method = contextData[0]; // method in context
       byte[] code = ((SmallByteArray) method.data[1]).values; // code pointer
       int bytePointer = ((SmallInt) contextData[4]).value;
@@ -622,14 +620,13 @@ class SmallInterpreter implements Serializable {
 
               case 34: { // thread kill
                 if (parentThread != null) {
-                  parentThread.stop();
+                  parentThread.interrupt();
                 }
                 if (myThread != null) {
-                  myThread.stop();
+                  myThread.interrupt();
                 }
-                System.out.println("is there life after death?");
+                return nilObject;
               }
-                break;
 
               case 35: // return current context
                 returnedValue = context;
@@ -1113,7 +1110,11 @@ class SmallInterpreter implements Serializable {
 
               case 101: { // semaphore wait
                 SmallJavaObject jo = (SmallJavaObject) stack[--stackTop];
-                returnedValue = ((Sema) jo.value).get();
+                try {
+                  returnedValue = ((Sema) jo.value).get();
+                } catch (InterruptedException e) {
+                  returnedValue = nilObject;
+                }
               }
                 break;
 
@@ -1299,7 +1300,7 @@ class SmallInterpreter implements Serializable {
       } // end of inner loop
 
       if ((context == null) || (context == nilObject)) {
-        if (DEBUG) {
+        if (debug) {
           System.out.println("lookups " + lookup + " cached " + cached);
         }
         return returnedValue;
