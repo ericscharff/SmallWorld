@@ -6,7 +6,6 @@
 */
 
 import java.awt.BorderLayout;
-
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
@@ -23,13 +22,20 @@ import java.awt.event.MouseMotionAdapter;
 import java.awt.image.BufferedImage;
 import java.io.DataInput;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -705,17 +711,16 @@ class SmallInterpreter implements Serializable {
                 SmallByteArray a = (SmallByteArray) stack[--stackTop];
                 String name = a.toString();
                 try {
-                  ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(name));
-                  // oos.writeObject(this);
-                  // write one by one to avoid serialization
-                  oos.writeObject(nilObject);
-                  oos.writeObject(trueObject);
-                  oos.writeObject(falseObject);
-                  oos.writeObject(smallInts);
-                  oos.writeObject(ArrayClass);
-                  oos.writeObject(BlockClass);
-                  oos.writeObject(ContextClass);
-                  oos.writeObject(IntegerClass);
+                  ImageWriter iw = new ImageWriter(new FileOutputStream(name));
+                  iw.writeObject(nilObject);
+                  iw.writeObject(trueObject);
+                  iw.writeObject(falseObject);
+                  iw.writeObject(smallInts);
+                  iw.writeObject(ArrayClass);
+                  iw.writeObject(BlockClass);
+                  iw.writeObject(ContextClass);
+                  iw.writeObject(IntegerClass);
+                  iw.finish();
                 } catch (Exception e) {
                   throw new SmallException("got I/O Exception " + e, context);
                 }
@@ -1484,4 +1489,187 @@ class SmallInterpreter implements Serializable {
     }
   }
 
+}
+
+class ImageWriter {
+  private final HashMap<SmallObject, Integer> objectPool;
+  private final TreeMap<Integer, SmallObject> allObjects;
+  private final ArrayList<Integer> roots;
+  private final DataOutputStream out;
+  private int objectIndex;
+  private int numSmallInts;
+
+  public ImageWriter(OutputStream out) {
+    objectPool = new HashMap<>();
+    allObjects = new TreeMap<>();
+    roots = new ArrayList<>();
+    this.out = new DataOutputStream(out);
+    this.objectIndex = 0;
+    this.numSmallInts = 0;
+  }
+
+  public void writeObject(SmallObject obj) {
+    writeObjectImpl(obj);
+    roots.add(objectPool.get(obj));
+  }
+
+  private void writeObjectImpl(SmallObject obj) {
+    if (!objectPool.containsKey(obj)) {
+      objectPool.put(obj, objectIndex);
+      allObjects.put(objectIndex, obj);
+      objectIndex++;
+      writeObjectImpl(obj.objClass);
+      if (obj.data != null) {
+        for (SmallObject child : obj.data) {
+          writeObjectImpl(child);
+        }
+      }
+    }
+  }
+
+  public void writeObject(SmallInt[] ints) {
+    if (numSmallInts > 0) {
+      throw new RuntimeException("Can only write ints one time");
+    }
+    numSmallInts = ints.length;
+    for (SmallInt child : ints) {
+      writeObject(child);
+    }
+  }
+
+  public void finish() throws IOException {
+    // Header, SWST version 0
+    out.writeInt(0x53575354); // 'SWST'
+    out.writeInt(0); // version 0
+    out.writeInt(objectIndex); // object count
+    // First, write the object types
+    // 0 = SmallObject, 1 = SmallInt, 2 = SmallByteArray
+    for (Entry<Integer, SmallObject> entry : allObjects.entrySet()) {
+      SmallObject obj = entry.getValue();
+      if (obj instanceof SmallByteArray) {
+        out.writeByte(2);
+      } else if (obj instanceof SmallInt) {
+        out.writeByte(1);
+      } else if (obj instanceof SmallJavaObject) {
+        throw new RuntimeException("JavaObject serialization not supported");
+      } else {
+        out.writeByte(0);
+      }
+    }
+    // Then, write entries
+    for (Entry<Integer, SmallObject> entry : allObjects.entrySet()) {
+      SmallObject obj = entry.getValue();
+      // Reference to class
+      out.writeInt(objectPool.get(obj.objClass));
+      // data (-1 if none)
+      if (obj.data == null) {
+        out.writeInt(-1);
+      } else {
+        out.writeInt(obj.data.length);
+        for (SmallObject child : obj.data) {
+          out.writeInt(objectPool.get(child));
+        }
+      }
+      if (obj instanceof SmallInt) {
+        out.writeInt(((SmallInt)obj).value);
+      }
+      if (obj instanceof SmallByteArray) {
+        SmallByteArray sba = (SmallByteArray)obj;
+        out.writeInt(sba.values.length);
+        for (byte b : sba.values) {
+          out.writeByte(b);
+        }
+      }
+    }
+    // Write the (special case) count of small integers
+    out.writeInt(numSmallInts);
+    // Finally, write out index of the roots, so they can be streamed back in
+    for (Integer i : roots) {
+      out.writeInt(i);
+    }
+    out.close();
+  }
+}
+
+class ImageReader {
+  private final DataInputStream in;
+  private SmallObject[] objectPool;
+  private int numSmallInts;
+
+  public ImageReader(InputStream in) {
+    this.in = new DataInputStream(in);
+    this.objectPool = null;
+  }
+
+  private void readObjects() throws IOException {
+    if (in.readInt() != 0x53575354) {
+      throw new RuntimeException("Bad magic number");
+    }
+    if (in.readInt() != 0) {
+      throw new RuntimeException("Bad version number");
+    }
+    int objectCount = in.readInt();
+    objectPool = new SmallObject[objectCount];
+    // Read headers to construct placeholder objects
+    for (int i=0; i < objectCount; i++) {
+      int objType = in.readByte();
+      switch (objType) {
+        case 0:
+          objectPool[i] = new SmallObject();
+          break;
+        case 1:
+          objectPool[i] = new SmallInt(null, 0);
+          break;
+        case 2:
+          objectPool[i] = new SmallByteArray(null, 0);
+          break;
+        default:
+          throw new RuntimeException("Unknown object type " + objType);
+      }
+    }
+    // Then fill in the objects
+    for (int i=0; i < objectCount; i++) {
+      SmallObject obj = objectPool[i];
+      obj.objClass = objectPool[in.readInt()];
+      int dataLength = in.readInt();
+      if (dataLength == -1) {
+        obj.data = null;
+      } else {
+        obj.data = new SmallObject[dataLength];
+        for (int j=0; j < dataLength; j++) {
+          obj.data[j] = objectPool[in.readInt()];
+        }
+      }
+      // Type specific data
+      if (obj instanceof SmallInt) {
+        ((SmallInt)obj).value = in.readInt();
+      }
+      if (obj instanceof SmallByteArray) {
+        SmallByteArray sba = (SmallByteArray)obj;
+        int byteLength = in.readInt();
+        sba.values = new byte[byteLength];
+        for (int j=0; j < byteLength; j++) {
+          sba.values[j] = in.readByte();
+        }
+      }
+    }
+    numSmallInts = in.readInt();
+    // Stream now points to the first root
+  }
+
+  public SmallObject readObject() throws IOException {
+    if (objectPool == null) {
+      readObjects();
+    }
+    // InputStream should now point to the index of a root
+    return objectPool[in.readInt()];
+  }
+
+  public SmallInt[] readSmallInts() throws IOException {
+    SmallInt[] ints = new SmallInt[numSmallInts];
+    for (int i=0; i < numSmallInts; i++) {
+      ints[i] = (SmallInt)readObject();
+    }
+    return ints;
+  }
 }

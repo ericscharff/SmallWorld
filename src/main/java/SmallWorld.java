@@ -102,18 +102,16 @@ public class SmallWorld extends JApplet {
 
 
   private void readImage(InputStream name) throws Exception {
-    ObjectInputStream ois = new ObjectInputStream(name);
     theInterpreter = new SmallInterpreter();
-    // theInterpreter = (SmallInterpreter) ois.readObject();
-    // now read object by object
-    theInterpreter.nilObject = (SmallObject) ois.readObject();
-    theInterpreter.trueObject = (SmallObject) ois.readObject();
-    theInterpreter.falseObject = (SmallObject) ois.readObject();
-    theInterpreter.smallInts = (SmallInt[]) ois.readObject();
-    theInterpreter.ArrayClass = (SmallObject) ois.readObject();
-    theInterpreter.BlockClass = (SmallObject) ois.readObject();
-    theInterpreter.ContextClass = (SmallObject) ois.readObject();
-    theInterpreter.IntegerClass = (SmallObject) ois.readObject();
+    ImageReader ir = new ImageReader(name);
+    theInterpreter.nilObject = ir.readObject();
+    theInterpreter.trueObject = ir.readObject();
+    theInterpreter.falseObject = ir.readObject();
+    theInterpreter.smallInts = ir.readSmallInts();
+    theInterpreter.ArrayClass = ir.readObject();
+    theInterpreter.BlockClass = ir.readObject();
+    theInterpreter.ContextClass = ir.readObject();
+    theInterpreter.IntegerClass = ir.readObject();
     output.setText("image initialized");
     done = true;
   }
