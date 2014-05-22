@@ -6,12 +6,20 @@ import java.io.InputStream;
 
 class ImageReader {
   private final DataInputStream in;
-  private SmallObject[] objectPool;
   private int numSmallInts;
+  private SmallObject[] objectPool;
 
   public ImageReader(InputStream in) {
     this.in = new DataInputStream(in);
     this.objectPool = null;
+  }
+
+  public SmallObject readObject() throws IOException {
+    if (objectPool == null) {
+      readObjects();
+    }
+    // InputStream should now point to the index of a root
+    return objectPool[in.readInt()];
   }
 
   private void readObjects() throws IOException {
@@ -68,14 +76,6 @@ class ImageReader {
     }
     numSmallInts = in.readInt();
     // Stream now points to the first root
-  }
-
-  public SmallObject readObject() throws IOException {
-    if (objectPool == null) {
-      readObjects();
-    }
-    // InputStream should now point to the index of a root
-    return objectPool[in.readInt()];
   }
 
   public SmallInt[] readSmallInts() throws IOException {

@@ -1,6 +1,9 @@
 package smallworld;
 
 class Sema {
+  private boolean hasBeenSet = false;
+  private SmallObject value;
+
   public synchronized SmallObject get() {
     if (!hasBeenSet) {
       try {
@@ -17,7 +20,4 @@ class Sema {
     hasBeenSet = true;
     notifyAll();
   }
-
-  private SmallObject value;
-  private boolean hasBeenSet = false;
 }

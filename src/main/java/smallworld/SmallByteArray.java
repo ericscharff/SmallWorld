@@ -17,17 +17,17 @@ class SmallByteArray extends SmallObject {
   }
 
   @Override
-  public String toString() {
-    // we assume its a string, tho not always true...
-    return new String(values);
-  }
-
-  @Override
   public SmallObject copy(SmallObject cl) {
     SmallByteArray newObj = new SmallByteArray(cl, values.length);
     for (int i = 0; i < values.length; i++) {
       newObj.values[i] = values[i];
     }
     return newObj;
+  }
+
+  @Override
+  public String toString() {
+    // we assume its a string, tho not always true...
+    return new String(values);
   }
 }

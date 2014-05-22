@@ -9,12 +9,12 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 
 class ImageWriter {
-  private final HashMap<SmallObject, Integer> objectPool;
   private final TreeMap<Integer, SmallObject> allObjects;
-  private final ArrayList<Integer> roots;
-  private final DataOutputStream out;
-  private int objectIndex;
   private int numSmallInts;
+  private int objectIndex;
+  private final HashMap<SmallObject, Integer> objectPool;
+  private final DataOutputStream out;
+  private final ArrayList<Integer> roots;
 
   public ImageWriter(OutputStream out) {
     objectPool = new HashMap<>();
@@ -23,35 +23,6 @@ class ImageWriter {
     this.out = new DataOutputStream(out);
     this.objectIndex = 0;
     this.numSmallInts = 0;
-  }
-
-  public void writeObject(SmallObject obj) {
-    writeObjectImpl(obj);
-    roots.add(objectPool.get(obj));
-  }
-
-  private void writeObjectImpl(SmallObject obj) {
-    if (!objectPool.containsKey(obj)) {
-      objectPool.put(obj, objectIndex);
-      allObjects.put(objectIndex, obj);
-      objectIndex++;
-      writeObjectImpl(obj.objClass);
-      if (obj.data != null) {
-        for (SmallObject child : obj.data) {
-          writeObjectImpl(child);
-        }
-      }
-    }
-  }
-
-  public void writeObject(SmallInt[] ints) {
-    if (numSmallInts > 0) {
-      throw new RuntimeException("Can only write ints one time");
-    }
-    numSmallInts = ints.length;
-    for (SmallInt child : ints) {
-      writeObject(child);
-    }
   }
 
   public void finish() throws IOException {
@@ -105,5 +76,34 @@ class ImageWriter {
       out.writeInt(i);
     }
     out.close();
+  }
+
+  public void writeObject(SmallInt[] ints) {
+    if (numSmallInts > 0) {
+      throw new RuntimeException("Can only write ints one time");
+    }
+    numSmallInts = ints.length;
+    for (SmallInt child : ints) {
+      writeObject(child);
+    }
+  }
+
+  public void writeObject(SmallObject obj) {
+    writeObjectImpl(obj);
+    roots.add(objectPool.get(obj));
+  }
+
+  private void writeObjectImpl(SmallObject obj) {
+    if (!objectPool.containsKey(obj)) {
+      objectPool.put(obj, objectIndex);
+      allObjects.put(objectIndex, obj);
+      objectIndex++;
+      writeObjectImpl(obj.objClass);
+      if (obj.data != null) {
+        for (SmallObject child : obj.data) {
+          writeObjectImpl(child);
+        }
+      }
+    }
   }
 }

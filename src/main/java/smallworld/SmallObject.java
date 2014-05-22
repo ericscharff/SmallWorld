@@ -1,8 +1,8 @@
 package smallworld;
 
 class SmallObject {
-  public SmallObject objClass;
   public SmallObject[] data;
+  public SmallObject objClass;
 
   public SmallObject() {
     objClass = null;

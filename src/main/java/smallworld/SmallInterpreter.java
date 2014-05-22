@@ -47,7 +47,7 @@ import javax.swing.text.JTextComponent;
 /**
  * Little Smalltalk Interpreter written in Java.
  *
- * Written by Tim Budd, budd@acm.org
+ *  Written by Tim Budd, budd@acm.org
  *
  * Version 0.8 (November 2002)
  */
@@ -55,48 +55,18 @@ class SmallInterpreter implements Serializable {
   private static final boolean DEBUG = false;
 
   // global constants
-  public SmallObject nilObject;
-  public SmallObject trueObject;
-  public SmallObject falseObject;
-  public SmallInt[] smallInts;
   public SmallObject ArrayClass;
   public SmallObject BlockClass;
   public SmallObject ContextClass;
+  public SmallObject falseObject;
   public SmallObject IntegerClass;
+  public SmallObject nilObject;
+  public SmallInt[] smallInts;
+  public SmallObject trueObject;
 
-  // create a new small integer
-  SmallInt newInteger(int val) {
-    if ((val >= 0) && (val < 10)) {
-      return smallInts[val];
-    } else {
-      return new SmallInt(IntegerClass, val);
-    }
-  }
-
-  private SmallObject methodLookup(SmallObject receiver, SmallByteArray messageSelector,
-      SmallObject context, SmallObject arguments) throws SmallException {
-    String name = messageSelector.toString();
-    SmallObject cls;
-    for (cls = receiver; cls != nilObject; cls = cls.data[1]) {
-      SmallObject dict = cls.data[2]; // dictionary in class
-      for (int i = 0; i < dict.data.length; i++) {
-        SmallObject aMethod = dict.data[i];
-        if (name.equals(aMethod.data[0].toString())) {
-          return aMethod;
-        }
-      }
-    }
-    // try once to handle method in Smalltalk before giving up
-    if (name.equals("error:")) {
-      throw new SmallException("Unrecognized message selector: " + messageSelector, context);
-    }
-    SmallObject[] newArgs = new SmallObject[2];
-    newArgs[0] = arguments.data[0]; // same receiver
-    newArgs[1] =
-        new SmallByteArray(messageSelector.objClass, "Unrecognized message selector: " + name);
-    arguments.data = newArgs;
-    return methodLookup(receiver, new SmallByteArray(messageSelector.objClass, "error:"), context,
-        arguments);
+  @SuppressWarnings("unchecked")
+  private JList<SmallObject> asJList(Object obj) {
+    return (JList<SmallObject>) obj;
   }
 
   SmallObject buildContext(SmallObject oldContext, SmallObject arguments, SmallObject method) {
@@ -1342,12 +1312,45 @@ class SmallInterpreter implements Serializable {
     }
   } // end of outer loop
 
-  @SuppressWarnings("unchecked")
-  private JList<SmallObject> asJList(Object obj) {
-    return (JList<SmallObject>) obj;
+  private SmallObject methodLookup(SmallObject receiver, SmallByteArray messageSelector,
+      SmallObject context, SmallObject arguments) throws SmallException {
+    String name = messageSelector.toString();
+    SmallObject cls;
+    for (cls = receiver; cls != nilObject; cls = cls.data[1]) {
+      SmallObject dict = cls.data[2]; // dictionary in class
+      for (int i = 0; i < dict.data.length; i++) {
+        SmallObject aMethod = dict.data[i];
+        if (name.equals(aMethod.data[0].toString())) {
+          return aMethod;
+        }
+      }
+    }
+    // try once to handle method in Smalltalk before giving up
+    if (name.equals("error:")) {
+      throw new SmallException("Unrecognized message selector: " + messageSelector, context);
+    }
+    SmallObject[] newArgs = new SmallObject[2];
+    newArgs[0] = arguments.data[0]; // same receiver
+    newArgs[1] =
+        new SmallByteArray(messageSelector.objClass, "Unrecognized message selector: " + name);
+    arguments.data = newArgs;
+    return methodLookup(receiver, new SmallByteArray(messageSelector.objClass, "error:"), context,
+        arguments);
+  }
+
+  // create a new small integer
+  SmallInt newInteger(int val) {
+    if ((val >= 0) && (val < 10)) {
+      return smallInts[val];
+    } else {
+      return new SmallInt(IntegerClass, val);
+    }
   }
 
   private class ActionThread extends Thread {
+    private final SmallObject action;
+    private final Thread myThread;
+
     public ActionThread(SmallObject block, Thread myT) {
       myThread = myT;
       action = new SmallObject(ContextClass, 10);
@@ -1374,9 +1377,6 @@ class SmallInterpreter implements Serializable {
       action.data[2].data[argLoc + 1] = newInteger(v2);
     }
 
-    private final SmallObject action;
-    private final Thread myThread;
-
     @Override
     public void run() {
       int stksize = action.data[3].data.length;
@@ -1391,5 +1391,4 @@ class SmallInterpreter implements Serializable {
       }
     }
   }
-
 }

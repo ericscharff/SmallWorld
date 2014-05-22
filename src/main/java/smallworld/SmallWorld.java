@@ -16,50 +16,13 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 public class SmallWorld extends JApplet {
-  static public void main(String[] args) {
-    new SmallWorld(args);
-  }
-
+  private boolean done = false;
+  private final JTextField output = new JTextField();
   private SmallInterpreter theInterpreter = new SmallInterpreter();
 
-  // used only by applet
-  @Override
-  public void init() {
-    setContentPane(buildPanel());
-    // now read the image
-    output.setText("Initializing image: wait ....");
-    try {
-      InputStream fin = new URL(getCodeBase(), "image").openStream();
-      readImage(fin);
-    } catch (Exception e) {
-      output.setText("Applet exception " + e);
-    }
-    repaint();
+  public static void main(String[] args) {
+    new SmallWorld(args);
   }
-
-  private JPanel buildPanel() {
-    JPanel p = new JPanel();
-    p.setLayout(new GridLayout(4, 1));
-    JButton browserButton = new JButton("class browser");
-    browserButton.addActionListener(new doItListener("Class browser"));
-    p.add(browserButton);
-    JButton saveButton = new JButton("save image");
-    saveButton.addActionListener(new doItListener("File saveImage: 'image'"));
-    p.add(saveButton);
-    JButton quitButton = new JButton("quit");
-    p.add(quitButton);
-    quitButton.addActionListener(new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        // maybe later do something more intelligent
-        System.exit(0);
-      }
-    });
-    p.add(output);
-    return p;
-  }
-
-  private final JTextField output = new JTextField();
 
   public SmallWorld() {} // used by applet
 
@@ -94,6 +57,43 @@ public class SmallWorld extends JApplet {
   }
 
 
+  private JPanel buildPanel() {
+    JPanel p = new JPanel();
+    p.setLayout(new GridLayout(4, 1));
+    JButton browserButton = new JButton("class browser");
+    browserButton.addActionListener(new doItListener("Class browser"));
+    p.add(browserButton);
+    JButton saveButton = new JButton("save image");
+    saveButton.addActionListener(new doItListener("File saveImage: 'image'"));
+    p.add(saveButton);
+    JButton quitButton = new JButton("quit");
+    p.add(quitButton);
+    quitButton.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        // maybe later do something more intelligent
+        System.exit(0);
+      }
+    });
+    p.add(output);
+    return p;
+  }
+
+  // used only by applet
+  @Override
+  public void init() {
+    setContentPane(buildPanel());
+    // now read the image
+    output.setText("Initializing image: wait ....");
+    try {
+      InputStream fin = new URL(getCodeBase(), "image").openStream();
+      readImage(fin);
+    } catch (Exception e) {
+      output.setText("Applet exception " + e);
+    }
+    repaint();
+  }
+
   private void readImage(InputStream name) throws Exception {
     theInterpreter = new SmallInterpreter();
     ImageReader ir = new ImageReader(name);
@@ -109,14 +109,12 @@ public class SmallWorld extends JApplet {
     done = true;
   }
 
-  private boolean done = false;
-
   private class doItListener implements ActionListener {
+    private final String task;
+
     public doItListener(String t) {
       task = t;
     }
-
-    private final String task;
 
     @Override
     public void actionPerformed(ActionEvent e) {
