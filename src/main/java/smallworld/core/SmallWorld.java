@@ -145,6 +145,7 @@ public class SmallWorld extends JApplet {
         try {
           theInterpreter.execute(ctx, null, null);
         } catch (Exception ex) {
+          ex.printStackTrace();
           output.setText("exception: " + ex);
           repaint();
         }

@@ -1,20 +1,5 @@
 package smallworld.core;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Graphics;
-import java.awt.GridLayout;
-import java.awt.Image;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.AdjustmentEvent;
-import java.awt.event.AdjustmentListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
-import java.awt.image.BufferedImage;
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.EOFException;
@@ -22,27 +7,21 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.Serializable;
 
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingConstants;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.text.JTextComponent;
+import smallworld.ui.BorderedPanel;
+import smallworld.ui.Button;
+import smallworld.ui.GridPanel;
+import smallworld.ui.HasText;
+import smallworld.ui.Label;
+import smallworld.ui.ListWidget;
+import smallworld.ui.Menu;
+import smallworld.ui.MenuItem;
+import smallworld.ui.Picture;
+import smallworld.ui.Slider;
+import smallworld.ui.UIFactory;
+import smallworld.ui.Widget;
+import smallworld.ui.Window;
+import smallworld.ui.swing.SwingUIFactory;
 
 /**
  * Little Smalltalk Interpreter written in Java.
@@ -51,7 +30,7 @@ import javax.swing.text.JTextComponent;
  *
  * Version 0.8 (November 2002)
  */
-class SmallInterpreter implements Serializable {
+class SmallInterpreter {
   // global constants
   public SmallObject ArrayClass;
   public SmallObject BlockClass;
@@ -62,9 +41,10 @@ class SmallInterpreter implements Serializable {
   public SmallInt[] smallInts;
   public SmallObject trueObject;
 
-  @SuppressWarnings("unchecked")
-  private JList<SmallObject> asJList(Object obj) {
-    return (JList<SmallObject>) obj;
+  private final UIFactory uiFactory = new SwingUIFactory();
+
+  private Widget asWidget(SmallObject o) {
+    return (Widget) ((SmallJavaObject) o).value;
   }
 
   SmallObject buildContext(SmallObject oldContext, SmallObject arguments, SmallObject method) {
@@ -752,9 +732,8 @@ class SmallInterpreter implements Serializable {
                 break;
 
               case 60: { // make window
-                JDialog jd = new JDialog();
-                jd.setVisible(false);
-                returnedValue = new SmallJavaObject(stack[--stackTop], jd);
+                Window dialog = uiFactory.makeWindow();
+                returnedValue = new SmallJavaObject(stack[--stackTop], dialog);
               }
                 break;
 
@@ -762,9 +741,9 @@ class SmallInterpreter implements Serializable {
                 returnedValue = stack[--stackTop];
                 SmallJavaObject jo = (SmallJavaObject) stack[--stackTop];
                 if (returnedValue == trueObject) {
-                  ((JDialog) jo.value).setVisible(true);
+                  ((Window) jo.value).setVisible(true);
                 } else {
-                  ((JDialog) jo.value).setVisible(false);
+                  ((Window) jo.value).setVisible(false);
                 }
               }
                 break;
@@ -773,7 +752,7 @@ class SmallInterpreter implements Serializable {
                 SmallJavaObject tc = (SmallJavaObject) stack[--stackTop];
                 returnedValue = stack[--stackTop];
                 SmallJavaObject jd = (SmallJavaObject) returnedValue;
-                ((JDialog) jd.value).getContentPane().add((Component) tc.value);
+                ((Window) jd.value).addChild((Widget) tc.value);
               }
                 break;
 
@@ -783,7 +762,7 @@ class SmallInterpreter implements Serializable {
                 returnedValue = stack[--stackTop];
                 {
                   SmallJavaObject wo = (SmallJavaObject) returnedValue;
-                  ((JDialog) wo.value).setSize(low, high);
+                  ((Window) wo.value).setSize(low, high);
                 }
                 break;
 
@@ -791,11 +770,8 @@ class SmallInterpreter implements Serializable {
                 SmallJavaObject menu = (SmallJavaObject) stack[--stackTop];
                 returnedValue = stack[--stackTop];
                 SmallJavaObject jo = (SmallJavaObject) returnedValue;
-                JDialog jd = (JDialog) jo.value;
-                if (jd.getJMenuBar() == null) {
-                  jd.setJMenuBar(new JMenuBar());
-                }
-                jd.getJMenuBar().add((JMenu) menu.value);
+                Window dialog = (Window) jo.value;
+                dialog.addMenu((Menu) menu.value);
               }
                 break;
 
@@ -803,30 +779,30 @@ class SmallInterpreter implements Serializable {
                 SmallObject title = stack[--stackTop];
                 returnedValue = stack[--stackTop];
                 SmallJavaObject jd = (SmallJavaObject) returnedValue;
-                ((JDialog) jd.value).setTitle(title.toString());
+                ((Window) jd.value).setTitle(title.toString());
               }
                 break;
 
               case 66: { // repaint window
                 returnedValue = stack[--stackTop];
                 SmallJavaObject jd = (SmallJavaObject) returnedValue;
-                ((JDialog) jd.value).repaint();
+                ((Window) jd.value).redraw();
               }
                 break;
 
               case 70: { // new label panel
-                JLabel jl = new JLabel(stack[--stackTop].toString());
-                returnedValue = new SmallJavaObject(stack[--stackTop], new JScrollPane(jl));
+                Label jl = uiFactory.makeLabel(stack[--stackTop].toString());
+                returnedValue = new SmallJavaObject(stack[--stackTop], jl);
               }
                 break;
 
               case 71: { // new button
                 final SmallObject action = stack[--stackTop];
-                final JButton jb = new JButton(stack[--stackTop].toString());
+                Button jb = uiFactory.makeButton(stack[--stackTop].toString());
                 returnedValue = new SmallJavaObject(stack[--stackTop], jb);
-                jb.addActionListener(new ActionListener() {
+                jb.addButtonListener(new Button.ButtonListener() {
                   @Override
-                  public void actionPerformed(ActionEvent e) {
+                  public void buttonClicked() {
                     new ActionThread(action, myThread).start();
                   }
                 });
@@ -834,23 +810,22 @@ class SmallInterpreter implements Serializable {
                 break;
 
               case 72: // new text line
-                returnedValue = new SmallJavaObject(stack[--stackTop], new JTextField());
+                returnedValue = new SmallJavaObject(stack[--stackTop], uiFactory.makeTextField());
                 break;
 
               case 73: // new text area
-                returnedValue =
-                    new SmallJavaObject(stack[--stackTop], new JScrollPane(new JTextArea()));
+                returnedValue = new SmallJavaObject(stack[--stackTop], uiFactory.makeTextArea());
                 break;
 
               case 74: { // new grid panel
                 SmallObject data = stack[--stackTop];
                 low = ((SmallInt) stack[--stackTop]).value;
                 high = ((SmallInt) stack[--stackTop]).value;
-                JPanel jp = new JPanel();
-                jp.setLayout(new GridLayout(low, high));
-                for (int i = 0; i < data.data.length; i++)
-                  jp.add((Component) ((SmallJavaObject) data.data[i]).value);
-                returnedValue = new SmallJavaObject(stack[--stackTop], jp);
+                GridPanel gp = uiFactory.makeGridPanel(low, high);
+                for (int i = 0; i < data.data.length; i++) {
+                  gp.addChild(asWidget(data.data[i]));
+                }
+                returnedValue = new SmallJavaObject(stack[--stackTop], gp);
               }
                 break;
 
@@ -858,45 +833,40 @@ class SmallInterpreter implements Serializable {
                 final SmallObject action = stack[--stackTop];
                 SmallObject data = stack[--stackTop];
                 returnedValue = stack[--stackTop];
-                final JList<SmallObject> jl = new JList<>(data.data);
-                jl.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-                returnedValue = new SmallJavaObject(returnedValue, new JScrollPane(jl));
-                jl.addListSelectionListener(new ListSelectionListener() {
+                ListWidget jl = uiFactory.makeListWidget(data.data);
+                returnedValue = new SmallJavaObject(returnedValue, jl);
+                jl.addSelectionListener(new ListWidget.Listener() {
                   @Override
-                  public void valueChanged(ListSelectionEvent e) {
-                    if ((!e.getValueIsAdjusting()) && (jl.getSelectedIndex() >= 0)) {
-                      new ActionThread(action, myThread, jl.getSelectedIndex() + 1).start();
-                      // new ActionThread(action, myThread).start();
-                    }
+                  public void itemSelected(int selectedIndex) {
+                    new ActionThread(action, myThread, selectedIndex).start();
                   }
                 });
               }
                 break;
 
               case 76: { // new border panel
-                JPanel jp = new JPanel();
-                jp.setLayout(new BorderLayout());
+                BorderedPanel bp = uiFactory.makeBorderedPanel();
                 returnedValue = stack[--stackTop];
                 if (returnedValue != nilObject) {
-                  jp.add("Center", (Component) ((SmallJavaObject) returnedValue).value);
+                  bp.addToCenter(asWidget(returnedValue));
                 }
                 returnedValue = stack[--stackTop];
                 if (returnedValue != nilObject) {
-                  jp.add("West", (Component) ((SmallJavaObject) returnedValue).value);
+                  bp.addToWest(asWidget(returnedValue));
                 }
                 returnedValue = stack[--stackTop];
                 if (returnedValue != nilObject) {
-                  jp.add("East", (Component) ((SmallJavaObject) returnedValue).value);
+                  bp.addToEast(asWidget(returnedValue));
                 }
                 returnedValue = stack[--stackTop];
                 if (returnedValue != nilObject) {
-                  jp.add("South", (Component) ((SmallJavaObject) returnedValue).value);
+                  bp.addToSouth(asWidget(returnedValue));
                 }
                 returnedValue = stack[--stackTop];
                 if (returnedValue != nilObject) {
-                  jp.add("North", (Component) ((SmallJavaObject) returnedValue).value);
+                  bp.addToNorth(asWidget(returnedValue));
                 }
-                returnedValue = new SmallJavaObject(stack[--stackTop], jp);
+                returnedValue = new SmallJavaObject(stack[--stackTop], bp);
               }
                 break;
 
@@ -904,23 +874,9 @@ class SmallInterpreter implements Serializable {
                 SmallJavaObject img = (SmallJavaObject) stack[--stackTop];
                 SmallJavaObject lab = (SmallJavaObject) stack[--stackTop];
                 Object jo = lab.value;
-                if (jo instanceof JScrollPane) {
-                  jo = ((JScrollPane) jo).getViewport().getView();
+                if (jo instanceof Label) {
+                  ((Label) jo).setPicture((Picture) img.value);
                 }
-                if (jo instanceof JLabel) {
-                  JLabel jlb = (JLabel) jo;
-                  jlb.setIcon(new ImageIcon((Image) img.value));
-                  jlb.setHorizontalAlignment(SwingConstants.LEFT);
-                  jlb.setVerticalAlignment(SwingConstants.TOP);
-                  jlb.repaint();
-                }
-              }
-                break;
-
-              case 79: {// repaint
-                returnedValue = stack[--stackTop];
-                SmallJavaObject jo = (SmallJavaObject) returnedValue;
-                ((JComponent) jo.value).repaint();
               }
                 break;
 
@@ -928,13 +884,9 @@ class SmallInterpreter implements Serializable {
                 SmallJavaObject jt = (SmallJavaObject) stack[--stackTop];
                 returnedValue = stack[--stackTop]; // class
                 Object jo = jt.value;
-                if (jo instanceof JScrollPane) {
-                  jo = ((JScrollPane) jo).getViewport().getView();
-                }
-                if (jo instanceof JTextComponent) {
-
-                  returnedValue =
-                      new SmallByteArray(returnedValue, ((JTextComponent) jo).getText());
+                if (jo instanceof HasText) {
+                  HasText text = (HasText) jo;
+                  returnedValue = new SmallByteArray(returnedValue, text.getText());
                 } else {
                   returnedValue = new SmallByteArray(returnedValue, "");
                 }
@@ -945,13 +897,9 @@ class SmallInterpreter implements Serializable {
                 SmallJavaObject jt = (SmallJavaObject) stack[--stackTop];
                 returnedValue = stack[--stackTop]; // class
                 Object jo = jt.value;
-                if (jo instanceof JScrollPane) {
-                  jo = ((JScrollPane) jo).getViewport().getView();
-                }
-                if (jo instanceof JTextComponent) {
-
-                  returnedValue =
-                      new SmallByteArray(returnedValue, ((JTextComponent) jo).getSelectedText());
+                if (jo instanceof HasText) {
+                  HasText text = (HasText) jo;
+                  returnedValue = new SmallByteArray(returnedValue, text.getSelectedText());
                 } else {
                   returnedValue = new SmallByteArray(returnedValue, "");
                 }
@@ -962,11 +910,8 @@ class SmallInterpreter implements Serializable {
                 returnedValue = stack[--stackTop];// text
                 SmallJavaObject jt = (SmallJavaObject) stack[--stackTop];
                 Object jo = jt.value;
-                if (jo instanceof JScrollPane) {
-                  jo = ((JScrollPane) jo).getViewport().getView();
-                }
-                if (jo instanceof JTextComponent) {
-                  ((JTextComponent) jo).setText(returnedValue.toString());
+                if (jo instanceof HasText) {
+                  ((HasText) jo).setText(returnedValue.toString());
                 }
               }
                 break;
@@ -974,13 +919,10 @@ class SmallInterpreter implements Serializable {
               case 83: { // get selected index
                 SmallJavaObject jo = (SmallJavaObject) stack[--stackTop];
                 Object jl = jo.value;
-                if (jl instanceof JScrollPane) {
-                  jl = ((JScrollPane) jl).getViewport().getView();
-                }
-                if (jl instanceof JList) {
-                  returnedValue = newInteger(asJList(jl).getSelectedIndex() + 1);
-                } else if (jl instanceof JScrollBar) {
-                  returnedValue = newInteger(((JScrollBar) jl).getValue());
+                if (jl instanceof ListWidget) {
+                  returnedValue = newInteger(((ListWidget) jl).getSelectedIndex());
+                } else if (jl instanceof Slider) {
+                  returnedValue = newInteger(((Slider) jl).getValue());
                 } else {
                   returnedValue = newInteger(0);
                 }
@@ -992,13 +934,8 @@ class SmallInterpreter implements Serializable {
                 returnedValue = stack[--stackTop];
                 SmallJavaObject jo = (SmallJavaObject) returnedValue;
                 Object jl = jo.value;
-                if (jl instanceof JScrollPane) {
-                  jl = ((JScrollPane) jl).getViewport().getView();
-                }
-                if (jl instanceof JList) {
-                  JList<SmallObject> jList = asJList(jl);
-                  jList.setListData(data.data);
-                  jList.repaint();
+                if (jl instanceof ListWidget) {
+                  ((ListWidget) jl).setData(data.data);
                 }
               }
                 break;
@@ -1008,15 +945,13 @@ class SmallInterpreter implements Serializable {
                 int max = ((SmallInt) stack[--stackTop]).value + 10; // why?
                 int min = ((SmallInt) stack[--stackTop]).value;
                 SmallObject orient = stack[--stackTop];
-                final JScrollBar bar = new JScrollBar(
-                    ((orient == trueObject) ? JScrollBar.VERTICAL : JScrollBar.HORIZONTAL), min, 10,
-                    min, max);
-                returnedValue = new SmallJavaObject(stack[--stackTop], bar);
+                Slider slider = uiFactory.makeSlider(orient == trueObject, min, max);
+                returnedValue = new SmallJavaObject(stack[--stackTop], slider);
                 if (action != nilObject) {
-                  bar.addAdjustmentListener(new AdjustmentListener() {
+                  slider.addValueAdjustedListener(new Slider.ValueAdjustedListener() {
                     @Override
-                    public void adjustmentValueChanged(AdjustmentEvent ae) {
-                      new ActionThread(action, myThread, ae.getValue()).start();
+                    public void valueAdjusted(int newValue) {
+                      new ActionThread(action, myThread, newValue).start();
                     }
                   });
                 }
@@ -1026,15 +961,11 @@ class SmallInterpreter implements Serializable {
               case 86: { // onMouseDown b
                 final SmallObject action = stack[--stackTop];
                 SmallJavaObject pan = (SmallJavaObject) stack[--stackTop];
-                Object jo = pan.value;
-                if (jo instanceof JScrollPane) {
-                  jo = ((JScrollPane) jo).getViewport().getView();
-                }
-                final JComponent jpan = (JComponent) jo;
-                jpan.addMouseListener(new MouseAdapter() {
+                Widget jo = (Widget) pan.value;
+                jo.addMouseDownListener(new Widget.MouseListener() {
                   @Override
-                  public void mousePressed(MouseEvent e) {
-                    new ActionThread(action, myThread, e.getX(), e.getY()).start();
+                  public void mouseEvent(int x, int y) {
+                    new ActionThread(action, myThread, x, y).start();
                   }
                 });
               }
@@ -1043,15 +974,11 @@ class SmallInterpreter implements Serializable {
               case 87: { // onMouseUp b
                 final SmallObject action = stack[--stackTop];
                 SmallJavaObject pan = (SmallJavaObject) stack[--stackTop];
-                Object jo = pan.value;
-                if (jo instanceof JScrollPane) {
-                  jo = ((JScrollPane) jo).getViewport().getView();
-                }
-                final JComponent jpan = (JComponent) jo;
-                jpan.addMouseListener(new MouseAdapter() {
+                Widget jo = (Widget) pan.value;
+                jo.addMouseUpListener(new Widget.MouseListener() {
                   @Override
-                  public void mouseReleased(MouseEvent e) {
-                    new ActionThread(action, myThread, e.getX(), e.getY()).start();
+                  public void mouseEvent(int x, int y) {
+                    new ActionThread(action, myThread, x, y).start();
                   }
                 });
               }
@@ -1060,20 +987,11 @@ class SmallInterpreter implements Serializable {
               case 88: { // onMouseMove b
                 final SmallObject action = stack[--stackTop];
                 SmallJavaObject pan = (SmallJavaObject) stack[--stackTop];
-                Object jo = pan.value;
-                if (jo instanceof JScrollPane) {
-                  jo = ((JScrollPane) jo).getViewport().getView();
-                }
-                final JComponent jpan = (JComponent) jo;
-                jpan.addMouseMotionListener(new MouseMotionAdapter() {
+                Widget jo = (Widget) pan.value;
+                jo.addMouseMoveListener(new Widget.MouseListener() {
                   @Override
-                  public void mouseDragged(MouseEvent e) {
-                    new ActionThread(action, myThread, e.getX(), e.getY()).start();
-                  }
-
-                  @Override
-                  public void mouseMoved(MouseEvent e) {
-                    new ActionThread(action, myThread, e.getX(), e.getY()).start();
+                  public void mouseEvent(int x, int y) {
+                    new ActionThread(action, myThread, x, y).start();
                   }
                 });
               }
@@ -1082,7 +1000,7 @@ class SmallInterpreter implements Serializable {
               case 90: { // new menu
                 SmallObject title = stack[--stackTop]; // text
                 returnedValue = stack[--stackTop]; // class
-                JMenu menu = new JMenu(title.toString());
+                Menu menu = uiFactory.makeMenu(title.toString());
                 returnedValue = new SmallJavaObject(returnedValue, menu);
               }
                 break;
@@ -1092,15 +1010,15 @@ class SmallInterpreter implements Serializable {
                 final SmallObject text = stack[--stackTop];
                 returnedValue = stack[--stackTop];
                 SmallJavaObject mo = (SmallJavaObject) returnedValue;
-                JMenu menu = (JMenu) mo.value;
-                JMenuItem ji = new JMenuItem(text.toString());
-                ji.addActionListener(new ActionListener() {
+                Menu menu = (Menu) mo.value;
+                MenuItem mi = uiFactory.makeMenuItem(text.toString());
+                mi.addItemListener(new MenuItem.MenuItemListener() {
                   @Override
-                  public void actionPerformed(ActionEvent e) {
+                  public void itemClicked() {
                     new ActionThread(action, myThread).start();
                   }
                 });
-                menu.add(ji);
+                menu.addItem(mi);
               }
                 break;
 
@@ -1128,10 +1046,7 @@ class SmallInterpreter implements Serializable {
               case 110: { // new image
                 low = ((SmallInt) stack[--stackTop]).value;
                 high = ((SmallInt) stack[--stackTop]).value;
-                Image img = new BufferedImage(low, high, BufferedImage.TYPE_INT_RGB);
-                Graphics g = img.getGraphics();
-                g.setColor(Color.white);
-                g.fillRect(0, 0, low, high);
+                Picture img = uiFactory.makePicture(low, high);
                 returnedValue = new SmallJavaObject(stack[--stackTop], img);
               }
                 break;
@@ -1139,22 +1054,8 @@ class SmallInterpreter implements Serializable {
               case 111: { // new image from file
                 SmallByteArray title = (SmallByteArray) stack[--stackTop];
                 returnedValue = stack[--stackTop];
-                Image img = null;
-                try {
-                  img = Toolkit.getDefaultToolkit().getImage(title.toString());
-                  System.out.println("got image " + img);
-                  // MediaTracker mt = new MediaTracker(null);
-                  // mt.addImage(img, 0);
-                  // mt.waitForID(0);
-                } catch (Exception e) {
-                  System.out.println("image read got exception " + e);
-                }
-                low = img.getWidth(null);
-                high = img.getHeight(null);
-                BufferedImage bi = new BufferedImage(low, high, BufferedImage.TYPE_INT_RGB);
-                Graphics g = bi.createGraphics();
-                g.drawImage(img, 0, 0, null);
-                returnedValue = new SmallJavaObject(returnedValue, bi);
+                Picture img = uiFactory.makePicture(title.toString());
+                returnedValue = new SmallJavaObject(returnedValue, img);
               }
                 break;
 
@@ -1163,8 +1064,9 @@ class SmallInterpreter implements Serializable {
                 low = ((SmallInt) stack[--stackTop]).value;
                 high = ((SmallInt) stack[--stackTop]).value;
                 SmallJavaObject img = (SmallJavaObject) stack[--stackTop];
-                Graphics g = ((Image) img.value).getGraphics();
-                g.drawImage((Image) img2.value, low, high, null);
+                Picture dest = (Picture) img;
+                Picture src = (Picture) img2;
+                dest.drawImage(src, low, high);
               }
                 break;
 
@@ -1174,9 +1076,9 @@ class SmallInterpreter implements Serializable {
                 high = ((SmallInt) stack[--stackTop]).value;
                 int c = ((SmallInt) stack[--stackTop]).value;
                 SmallJavaObject img = (SmallJavaObject) stack[--stackTop];
-                Graphics g = ((Image) img.value).getGraphics();
-                g.setColor(new Color(c));
-                g.drawString(text.toString(), low, high);
+                Picture picture = (Picture) img.value;
+                picture.setColor(c);
+                picture.drawText(text.toString(), low, high);
               }
                 break;
 
@@ -1188,23 +1090,23 @@ class SmallInterpreter implements Serializable {
                 high = ((SmallInt) stack[--stackTop]).value;
                 int c = ((SmallInt) stack[--stackTop]).value;
                 SmallJavaObject img = (SmallJavaObject) stack[--stackTop];
-                Graphics g = ((Image) img.value).getGraphics();
-                g.setColor(new Color(c));
+                Picture picture = (Picture) img.value;
+                picture.setColor(c);
                 switch (s) {
                   case 1:
-                    g.drawOval(low, high, h, w);
+                    picture.drawOval(low, high, h, w);
                     break;
                   case 2:
-                    g.fillOval(low, high, h, w);
+                    picture.fillOval(low, high, h, w);
                     break;
                   case 3:
-                    g.drawRect(low, high, h, w);
+                    picture.drawRect(low, high, h, w);
                     break;
                   case 4:
-                    g.fillRect(low, high, h, w);
+                    picture.fillRect(low, high, h, w);
                     break;
                   case 5:
-                    g.drawLine(low, high, h, w);
+                    picture.drawLine(low, high, h, w);
                     break;
                 }
               }

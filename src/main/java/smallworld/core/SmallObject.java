@@ -1,6 +1,6 @@
 package smallworld.core;
 
-class SmallObject {
+public class SmallObject {
   public SmallObject[] data;
   public SmallObject objClass;
 
@@ -14,7 +14,7 @@ class SmallObject {
     data = new SmallObject[size];
   }
 
-  public SmallObject copy(@SuppressWarnings("unused") SmallObject cl) {
+  public SmallObject copy(SmallObject cl) {
     return this;
   }
 }

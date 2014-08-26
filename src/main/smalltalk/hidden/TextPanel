@@ -1,21 +1,26 @@
 EVAL Class addNewClass: ( Object subclass: 'TextPanel' variables: '' classVariables: '')
 METHOD TextPanel
 getSelectedText
+   "TODO: this should be 81"
    ^ <72 String self>
 !
 METHOD TextPanel
 getText
+   "TODO: this should be 80"
    ^ <71 String self>
 !
 METHOD TextPanel
 setText: t
+   "TODO: this should be 82"
    <79 self t>
 !
 META TextPanel
 new: t
+   "This should probably do something else"
    ^ < 70 self t>
 !
 META TextPanel
 textField
+   "TODO: Remove this method. it isn't called, and primitve 69 does not exit."
    ^ <69 self>
 !
