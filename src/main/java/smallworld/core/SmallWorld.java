@@ -7,15 +7,13 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.net.URL;
 
-import javax.swing.JApplet;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-public class SmallWorld extends JApplet {
+public class SmallWorld {
   private boolean done = false;
   private final JTextField output = new JTextField();
   private SmallInterpreter theInterpreter = new SmallInterpreter();
@@ -24,10 +22,7 @@ public class SmallWorld extends JApplet {
     new SmallWorld(args);
   }
 
-  public SmallWorld() {} // used by applet
-
-  public SmallWorld(String[] args) { // used by application
-
+  private SmallWorld(String[] args) {
     JFrame world = new JFrame();
     world.setTitle("Small World");
     world.setSize(200, 150);
@@ -77,21 +72,6 @@ public class SmallWorld extends JApplet {
     });
     p.add(output);
     return p;
-  }
-
-  // used only by applet
-  @Override
-  public void init() {
-    setContentPane(buildPanel());
-    // now read the image
-    output.setText("Initializing image: wait ....");
-    try {
-      InputStream fin = new URL(getCodeBase(), "image").openStream();
-      readImage(fin);
-    } catch (Exception e) {
-      output.setText("Applet exception " + e);
-    }
-    repaint();
   }
 
   private void readImage(InputStream name) throws Exception {
@@ -147,7 +127,6 @@ public class SmallWorld extends JApplet {
         } catch (Exception ex) {
           ex.printStackTrace();
           output.setText("exception: " + ex);
-          repaint();
         }
       }
     }
