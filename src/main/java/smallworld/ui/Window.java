@@ -7,4 +7,9 @@ public interface Window {
   void addChild(Widget child);
   void addMenu(Menu menu);
   void redraw();
+  void addCloseListener(CloseListener listener);
+
+  interface CloseListener {
+    void windowClosed();
+  }
 }

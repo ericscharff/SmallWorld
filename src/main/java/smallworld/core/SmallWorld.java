@@ -1,44 +1,46 @@
 package smallworld.core;
 
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.FileInputStream;
 import java.io.InputStream;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+import smallworld.ui.Button;
+import smallworld.ui.GridPanel;
+import smallworld.ui.HasText;
+import smallworld.ui.UIFactory;
+import smallworld.ui.Window;
+import smallworld.ui.swing.SwingUIFactory;
 
 public class SmallWorld {
   private boolean done = false;
-  private final JTextField output = new JTextField();
-  private SmallInterpreter theInterpreter = new SmallInterpreter();
+  private final SmallInterpreter theInterpreter;
+  private final HasText output;
 
   public static void main(String[] args) {
     new SmallWorld(args);
   }
 
   private SmallWorld(String[] args) {
-    JFrame world = new JFrame();
+    UIFactory factory = new SwingUIFactory();
+
+    theInterpreter = new SmallInterpreter(factory);
+
+    output = factory.makeTextField();
+
+    Window world = factory.makeWindow();
     world.setTitle("Small World");
     world.setSize(200, 150);
-    world.addWindowListener(new WindowAdapter() {
+    world.addCloseListener(new Window.CloseListener() {
       @Override
-      public void windowClosing(WindowEvent e) {
+      public void windowClosed() {
         System.exit(0);
       }
     });
-
-    world.getContentPane().add(buildPanel());
+    world.addChild(buildPanel(factory));
 
     // now read the image
     world.setVisible(true);
     output.setText("Initializing image: wait ....");
-    world.repaint();
+    world.redraw();
     try {
       if (args.length > 0) {
         readImage(new FileInputStream(args[0]));
@@ -48,34 +50,32 @@ public class SmallWorld {
     } catch (Exception e) {
       output.setText("caught exception:" + e);
     }
-    world.repaint();
+    world.redraw();
   }
 
 
-  private JPanel buildPanel() {
-    JPanel p = new JPanel();
-    p.setLayout(new GridLayout(4, 1));
-    JButton browserButton = new JButton("class browser");
-    browserButton.addActionListener(new doItListener("Class browser"));
-    p.add(browserButton);
-    JButton saveButton = new JButton("save image");
-    saveButton.addActionListener(new doItListener("File saveImage: 'image'"));
-    p.add(saveButton);
-    JButton quitButton = new JButton("quit");
-    p.add(quitButton);
-    quitButton.addActionListener(new ActionListener() {
+  private GridPanel buildPanel(UIFactory factory) {
+    GridPanel p = factory.makeGridPanel(4, 1);
+    Button browserButton = factory.makeButton("class browser");
+    browserButton.addButtonListener(new doItListener("Class browser"));
+    p.addChild(browserButton);
+    Button saveButton = factory.makeButton("save image");
+    saveButton.addButtonListener(new doItListener("File saveImage: 'image'"));
+    p.addChild(saveButton);
+    Button quitButton = factory.makeButton("quit");
+    p.addChild(quitButton);
+    quitButton.addButtonListener(new Button.ButtonListener() {
       @Override
-      public void actionPerformed(ActionEvent e) {
+      public void buttonClicked() {
         // maybe later do something more intelligent
         System.exit(0);
       }
     });
-    p.add(output);
+    p.addChild(output);
     return p;
   }
 
   private void readImage(InputStream name) throws Exception {
-    theInterpreter = new SmallInterpreter();
     ImageReader ir = new ImageReader(name);
     theInterpreter.nilObject = ir.readObject();
     theInterpreter.trueObject = ir.readObject();
@@ -89,7 +89,7 @@ public class SmallWorld {
     done = true;
   }
 
-  private class doItListener implements ActionListener {
+  private class doItListener implements Button.ButtonListener {
     private final String task;
 
     public doItListener(String t) {
@@ -97,7 +97,7 @@ public class SmallWorld {
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public void buttonClicked() {
       if (!done) {
         return; // not ready yet
       }

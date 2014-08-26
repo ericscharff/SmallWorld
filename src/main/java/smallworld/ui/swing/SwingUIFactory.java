@@ -11,6 +11,8 @@ import java.awt.event.AdjustmentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -519,6 +521,16 @@ public class SwingUIFactory implements UIFactory {
     @Override
     public void redraw() {
       dialog.repaint();
+    }
+
+    @Override
+    public void addCloseListener(final CloseListener listener) {
+      dialog.addWindowListener(new WindowAdapter() {
+        @Override
+        public void windowClosing(WindowEvent e) {
+          listener.windowClosed();
+        }
+      });
     }
   }
 

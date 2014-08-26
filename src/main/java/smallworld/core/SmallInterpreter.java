@@ -21,7 +21,6 @@ import smallworld.ui.Slider;
 import smallworld.ui.UIFactory;
 import smallworld.ui.Widget;
 import smallworld.ui.Window;
-import smallworld.ui.swing.SwingUIFactory;
 
 /**
  * Little Smalltalk Interpreter written in Java.
@@ -41,7 +40,11 @@ class SmallInterpreter {
   public SmallInt[] smallInts;
   public SmallObject trueObject;
 
-  private final UIFactory uiFactory = new SwingUIFactory();
+  private final UIFactory uiFactory;
+
+  public SmallInterpreter(UIFactory factory) {
+    this.uiFactory = factory;
+  }
 
   private Widget asWidget(SmallObject o) {
     return (Widget) ((SmallJavaObject) o).value;
