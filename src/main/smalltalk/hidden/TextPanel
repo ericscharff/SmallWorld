@@ -1,18 +1,15 @@
 EVAL Class addNewClass: ( Object subclass: 'TextPanel' variables: '' classVariables: '')
 METHOD TextPanel
 getSelectedText
-   "TODO: this should be 81"
-   ^ <72 String self>
+   ^ <81 String self>
 !
 METHOD TextPanel
 getText
-   "TODO: this should be 80"
-   ^ <71 String self>
+   ^ <80 String self>
 !
 METHOD TextPanel
 setText: t
-   "TODO: this should be 82"
-   <79 self t>
+   <82 self t>
 !
 META TextPanel
 new: t
