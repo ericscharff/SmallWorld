@@ -673,34 +673,34 @@ class SmallInterpreter {
 
               case 50: // integer into float
                 low = ((SmallInt) stack[--stackTop]).value;
-                returnedValue = new SmallJavaObject(stack[--stackTop], new Double(low));
+                returnedValue = new SmallJavaObject(stack[--stackTop], Double.valueOf(low));
                 break;
 
               case 51: { // addition of float
                 double a = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
                 double b = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
-                returnedValue = new SmallJavaObject(stack[--stackTop], new Double(a + b));
+                returnedValue = new SmallJavaObject(stack[--stackTop], Double.valueOf(a + b));
               }
                 break;
 
               case 52: { // subtraction of float
                 double a = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
                 double b = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
-                returnedValue = new SmallJavaObject(stack[--stackTop], new Double(a - b));
+                returnedValue = new SmallJavaObject(stack[--stackTop], Double.valueOf(a - b));
               }
                 break;
 
               case 53: { // multiplication of float
                 double a = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
                 double b = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
-                returnedValue = new SmallJavaObject(stack[--stackTop], new Double(a * b));
+                returnedValue = new SmallJavaObject(stack[--stackTop], Double.valueOf(a * b));
               }
                 break;
 
               case 54: { // division of float
                 double a = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
                 double b = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
-                returnedValue = new SmallJavaObject(stack[--stackTop], new Double(a / b));
+                returnedValue = new SmallJavaObject(stack[--stackTop], Double.valueOf(a / b));
               }
                 break;
 
@@ -725,7 +725,7 @@ class SmallInterpreter {
                 break;
 
               case 58: // random float
-                returnedValue = new SmallJavaObject(stack[--stackTop], new Double(Math.random()));
+                returnedValue = new SmallJavaObject(stack[--stackTop], Double.valueOf(Math.random()));
                 break;
 
               case 59: // print of float
