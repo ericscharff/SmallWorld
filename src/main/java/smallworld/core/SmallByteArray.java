@@ -12,8 +12,7 @@ class SmallByteArray extends SmallObject {
     super(cl, 0);
     int size = text.length();
     values = new byte[size];
-    for (int i = 0; i < size; i++)
-      values[i] = (byte) text.charAt(i);
+    for (int i = 0; i < size; i++) values[i] = (byte) text.charAt(i);
   }
 
   @Override

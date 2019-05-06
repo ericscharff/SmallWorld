@@ -16,7 +16,6 @@ import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.FileInputStream;
 import java.io.IOException;
-
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -36,7 +35,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-
 import smallworld.core.SmallObject;
 import smallworld.ui.BorderedPanel;
 import smallworld.ui.Button;
@@ -124,47 +122,54 @@ public class SwingUIFactory implements UIFactory {
   }
 
   @Override
-  public MenuItem makeMenuItem(String label ) {
+  public MenuItem makeMenuItem(String label) {
     return new SwingMenuItem(label);
   }
 
   private abstract static class SwingWidget implements Widget {
     protected abstract JComponent getComponent();
+
     protected abstract JComponent getComponentOrScrollPane();
 
     @Override
     public void addMouseDownListener(final MouseListener listener) {
-      getComponent().addMouseListener(new MouseAdapter() {
-        @Override
-        public void mousePressed(MouseEvent e) {
-          listener.mouseEvent(e.getX(), e.getY());
-        }
-      });
+      getComponent()
+          .addMouseListener(
+              new MouseAdapter() {
+                @Override
+                public void mousePressed(MouseEvent e) {
+                  listener.mouseEvent(e.getX(), e.getY());
+                }
+              });
     }
 
     @Override
     public void addMouseUpListener(final MouseListener listener) {
-      getComponent().addMouseListener(new MouseAdapter() {
-        @Override
-        public void mouseReleased(MouseEvent e) {
-          listener.mouseEvent(e.getX(), e.getY());
-        }
-      });
+      getComponent()
+          .addMouseListener(
+              new MouseAdapter() {
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                  listener.mouseEvent(e.getX(), e.getY());
+                }
+              });
     }
 
     @Override
     public void addMouseMoveListener(final MouseListener listener) {
-      getComponent().addMouseMotionListener(new MouseMotionListener() {
-        @Override
-        public void mouseMoved(MouseEvent e) {
-          listener.mouseEvent(e.getX(), e.getY());
-        }
+      getComponent()
+          .addMouseMotionListener(
+              new MouseMotionListener() {
+                @Override
+                public void mouseMoved(MouseEvent e) {
+                  listener.mouseEvent(e.getX(), e.getY());
+                }
 
-        @Override
-        public void mouseDragged(MouseEvent e) {
-          listener.mouseEvent(e.getX(), e.getY());
-        }
-      });
+                @Override
+                public void mouseDragged(MouseEvent e) {
+                  listener.mouseEvent(e.getX(), e.getY());
+                }
+              });
     }
   }
 
@@ -177,12 +182,13 @@ public class SwingUIFactory implements UIFactory {
 
     @Override
     public void addButtonListener(final ButtonListener listener) {
-      jButton.addActionListener(new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-          listener.buttonClicked();
-        }
-      });
+      jButton.addActionListener(
+          new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+              listener.buttonClicked();
+            }
+          });
     }
 
     @Override
@@ -248,14 +254,15 @@ public class SwingUIFactory implements UIFactory {
 
     @Override
     public void addSelectionListener(final Listener listener) {
-      jList.addListSelectionListener(new ListSelectionListener() {
-        @Override
-        public void valueChanged(ListSelectionEvent e) {
-          if (!e.getValueIsAdjusting() && (jList.getSelectedIndex() >= 0)) {
-            listener.itemSelected(jList.getSelectedIndex() + 1);
-          }
-        }
-      });
+      jList.addListSelectionListener(
+          new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+              if (!e.getValueIsAdjusting() && (jList.getSelectedIndex() >= 0)) {
+                listener.itemSelected(jList.getSelectedIndex() + 1);
+              }
+            }
+          });
     }
 
     @Override
@@ -273,18 +280,20 @@ public class SwingUIFactory implements UIFactory {
     private final JScrollBar scrollBar;
 
     public SwingSlider(boolean orientVertically, int min, int max) {
-      scrollBar = new JScrollBar(
-          (orientVertically ? JScrollBar.VERTICAL : JScrollBar.HORIZONTAL), min, 10, min, max);
+      scrollBar =
+          new JScrollBar(
+              (orientVertically ? JScrollBar.VERTICAL : JScrollBar.HORIZONTAL), min, 10, min, max);
     }
 
     @Override
     public void addValueAdjustedListener(final ValueAdjustedListener listener) {
-      scrollBar.addAdjustmentListener(new AdjustmentListener() {
-        @Override
-        public void adjustmentValueChanged(AdjustmentEvent e) {
-          listener.valueAdjusted(e.getValue());
-        }
-      });
+      scrollBar.addAdjustmentListener(
+          new AdjustmentListener() {
+            @Override
+            public void adjustmentValueChanged(AdjustmentEvent e) {
+              listener.valueAdjusted(e.getValue());
+            }
+          });
     }
 
     @Override
@@ -463,12 +472,13 @@ public class SwingUIFactory implements UIFactory {
 
     @Override
     public void addItemListener(final MenuItemListener listener) {
-      menuItem.addActionListener(new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-          listener.itemClicked();
-        }
-      });
+      menuItem.addActionListener(
+          new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+              listener.itemClicked();
+            }
+          });
     }
 
     @Override
@@ -525,12 +535,13 @@ public class SwingUIFactory implements UIFactory {
 
     @Override
     public void addCloseListener(final CloseListener listener) {
-      dialog.addWindowListener(new WindowAdapter() {
-        @Override
-        public void windowClosing(WindowEvent e) {
-          listener.windowClosed();
-        }
-      });
+      dialog.addWindowListener(
+          new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+              listener.windowClosed();
+            }
+          });
     }
   }
 

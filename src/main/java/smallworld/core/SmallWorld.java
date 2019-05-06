@@ -2,7 +2,6 @@ package smallworld.core;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
-
 import smallworld.ui.Button;
 import smallworld.ui.GridPanel;
 import smallworld.ui.HasText;
@@ -29,12 +28,13 @@ public class SmallWorld {
     Window world = factory.makeWindow();
     world.setTitle("Small World");
     world.setSize(200, 150);
-    world.addCloseListener(new Window.CloseListener() {
-      @Override
-      public void windowClosed() {
-        System.exit(0);
-      }
-    });
+    world.addCloseListener(
+        new Window.CloseListener() {
+          @Override
+          public void windowClosed() {
+            System.exit(0);
+          }
+        });
     world.addChild(buildPanel(factory));
 
     // now read the image
@@ -53,7 +53,6 @@ public class SmallWorld {
     world.redraw();
   }
 
-
   private GridPanel buildPanel(UIFactory factory) {
     GridPanel p = factory.makeGridPanel(4, 1);
     Button browserButton = factory.makeButton("class browser");
@@ -64,13 +63,14 @@ public class SmallWorld {
     p.addChild(saveButton);
     Button quitButton = factory.makeButton("quit");
     p.addChild(quitButton);
-    quitButton.addButtonListener(new Button.ButtonListener() {
-      @Override
-      public void buttonClicked() {
-        // maybe later do something more intelligent
-        System.exit(0);
-      }
-    });
+    quitButton.addButtonListener(
+        new Button.ButtonListener() {
+          @Override
+          public void buttonClicked() {
+            // maybe later do something more intelligent
+            System.exit(0);
+          }
+        });
     p.addChild(output);
     return p;
   }

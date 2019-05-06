@@ -3,6 +3,7 @@ package smallworld.ui;
 public interface Picture {
   /**
    * Draw the supplied image on top of this image at the specified location.
+   *
    * @param picture picture to draw
    * @param x destination x coordinate, in the coordinates of this image.
    * @param y destination y coordinate, in the coordinates of this image.

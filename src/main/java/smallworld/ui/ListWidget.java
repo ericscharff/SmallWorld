@@ -10,14 +10,16 @@ public interface ListWidget extends Widget {
    * @return the selected item, where 1 is the first item, 2 is the second, etc.
    */
   int getSelectedIndex();
+
   void setData(SmallObject[] data);
+
   void addSelectionListener(Listener listener);
 
   interface Listener {
     /**
-     * Called when an item was selected from the underlying list. This index is one-based, not
-     * zero based! (Because this is consistent with the smalltalk code that calls this). Thus,
-     * the item that was selected, in java, is data[selectedIndex - 1].
+     * Called when an item was selected from the underlying list. This index is one-based, not zero
+     * based! (Because this is consistent with the smalltalk code that calls this). Thus, the item
+     * that was selected, in java, is data[selectedIndex - 1].
      *
      * @param selectedIndex the selected item, where 1 is the first item, 2 is the second, etc.
      */

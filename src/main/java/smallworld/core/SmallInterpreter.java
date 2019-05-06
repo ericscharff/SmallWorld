@@ -7,7 +7,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-
 import smallworld.ui.BorderedPanel;
 import smallworld.ui.Button;
 import smallworld.ui.GridPanel;
@@ -25,9 +24,9 @@ import smallworld.ui.Window;
 /**
  * Little Smalltalk Interpreter written in Java.
  *
- *  Written by Tim Budd, budd@acm.org
+ * <p>Written by Tim Budd, budd@acm.org
  *
- * Version 0.8 (November 2002)
+ * <p>Version 0.8 (November 2002)
  */
 class SmallInterpreter {
   // global constants
@@ -82,7 +81,8 @@ class SmallInterpreter {
 
     SmallObject[] contextData = context.data;
 
-    outerLoop: while (true) {
+    outerLoop:
+    while (true) {
       boolean debug = false;
       SmallObject method = contextData[0]; // method in context
       byte[] code = ((SmallByteArray) method.data[1]).values; // code pointer
@@ -98,7 +98,8 @@ class SmallInterpreter {
       SmallObject arguments = null;
       SmallObject[] literals = null;
 
-      innerLoop: while (true) {
+      innerLoop:
+      while (true) {
         int high = code[bytePointer++];
         int low = high & 0x0F;
         high = (high >>= 4) & 0x0F;
@@ -109,7 +110,6 @@ class SmallInterpreter {
         }
 
         switch (high) {
-
           case 1: // PushInstance
             if (arguments == null) {
               arguments = contextData[1];
@@ -220,8 +220,7 @@ class SmallInterpreter {
           case 8: // MarkArguments
             SmallObject newArguments = new SmallObject(ArrayClass, low);
             tempa = newArguments.data; // direct access to array
-            while (low > 0)
-              tempa[--low] = stack[--stackTop];
+            while (low > 0) tempa[--low] = stack[--stackTop];
             stack[stackTop++] = newArguments;
             break;
 
@@ -233,8 +232,10 @@ class SmallInterpreter {
             contextData[5] =
                 (stackTop < 10) ? smallInts[stackTop] : new SmallInt(IntegerClass, stackTop);
             // contextData[4] = newInteger(bytePointer);
-            contextData[4] = (bytePointer < 10) ? smallInts[bytePointer]
-                : new SmallInt(IntegerClass, bytePointer);
+            contextData[4] =
+                (bytePointer < 10)
+                    ? smallInts[bytePointer]
+                    : new SmallInt(IntegerClass, bytePointer);
             // now build new context
             if (literals == null) {
               literals = method.data[2].data;
@@ -245,13 +246,18 @@ class SmallInterpreter {
             // System.out.println("Arguments receiver " + arguments.data[0]);
             // System.out.println("Arguments class " + arguments.data[0].objClass);
             high = Math.abs(arguments.data[0].objClass.hashCode() + returnedValue.hashCode()) % 197;
-            if ((selectorCache[high] != null) && (selectorCache[high] == returnedValue)
+            if ((selectorCache[high] != null)
+                && (selectorCache[high] == returnedValue)
                 && (classCache[high] == arguments.data[0].objClass)) {
               method = methodCache[high];
               cached++;
             } else {
-              method = methodLookup(arguments.data[0].objClass, (SmallByteArray) literals[low],
-                  context, arguments);
+              method =
+                  methodLookup(
+                      arguments.data[0].objClass,
+                      (SmallByteArray) literals[low],
+                      context,
+                      arguments);
               lookup++;
               selectorCache[high] = returnedValue;
               classCache[high] = arguments.data[0].objClass;
@@ -274,62 +280,62 @@ class SmallInterpreter {
             }
             break;
 
-          case 11: {// SendBinary
-            if ((stack[stackTop - 1] instanceof SmallInt)
-                && (stack[stackTop - 2] instanceof SmallInt)) {
-              int j = ((SmallInt) stack[--stackTop]).value;
-              int i = ((SmallInt) stack[--stackTop]).value;
-              boolean done = true;
+          case 11:
+            { // SendBinary
+              if ((stack[stackTop - 1] instanceof SmallInt)
+                  && (stack[stackTop - 2] instanceof SmallInt)) {
+                int j = ((SmallInt) stack[--stackTop]).value;
+                int i = ((SmallInt) stack[--stackTop]).value;
+                boolean done = true;
+                switch (low) {
+                  case 0: // <
+                    returnedValue = (i < j) ? trueObject : falseObject;
+                    break;
+                  case 1: // <=
+                    returnedValue = (i <= j) ? trueObject : falseObject;
+                    break;
+                  case 2: // +
+                    long li = i + (long) j;
+                    if (li != (i + j)) {
+                      done = false; // overflow
+                    }
+                    returnedValue = newInteger(i + j);
+                    break;
+                }
+                if (done) {
+                  stack[stackTop++] = returnedValue;
+                  break;
+                } else {
+                  stackTop += 2; // overflow, send message
+                }
+              }
+              // non optimized binary message
+              arguments = new SmallObject(ArrayClass, 2);
+              arguments.data[1] = stack[--stackTop];
+              arguments.data[0] = stack[--stackTop];
+              contextData[5] = newInteger(stackTop);
+              contextData[4] = newInteger(bytePointer);
+              SmallByteArray msg = null;
               switch (low) {
-                case 0: // <
-                  returnedValue = (i < j) ? trueObject : falseObject;
+                case 0:
+                  msg = new SmallByteArray(null, "<");
                   break;
-                case 1: // <=
-                  returnedValue = (i <= j) ? trueObject : falseObject;
+                case 1:
+                  msg = new SmallByteArray(null, "<=");
                   break;
-                case 2: // +
-                  long li = i + (long) j;
-                  if (li != (i + j)) {
-                    done = false; // overflow
-                  }
-                  returnedValue = newInteger(i + j);
+                case 2:
+                  msg = new SmallByteArray(null, "+");
                   break;
               }
-              if (done) {
-                stack[stackTop++] = returnedValue;
-                break;
-              } else {
-                stackTop += 2; // overflow, send message
-              }
+              method = methodLookup(arguments.data[0].objClass, msg, context, arguments);
+              context = buildContext(context, arguments, method);
+              contextData = context.data;
+              continue outerLoop;
             }
-            // non optimized binary message
-            arguments = new SmallObject(ArrayClass, 2);
-            arguments.data[1] = stack[--stackTop];
-            arguments.data[0] = stack[--stackTop];
-            contextData[5] = newInteger(stackTop);
-            contextData[4] = newInteger(bytePointer);
-            SmallByteArray msg = null;
-            switch (low) {
-              case 0:
-                msg = new SmallByteArray(null, "<");
-                break;
-              case 1:
-                msg = new SmallByteArray(null, "<=");
-                break;
-              case 2:
-                msg = new SmallByteArray(null, "+");
-                break;
-            }
-            method = methodLookup(arguments.data[0].objClass, msg, context, arguments);
-            context = buildContext(context, arguments, method);
-            contextData = context.data;
-            continue outerLoop;
-          }
 
           case 13: // Do Primitive, low is arg count, next byte is number
             high = code[bytePointer++] & 0x0FF;
             switch (high) {
-
               case 1: // object identity
                 returnedValue = stack[--stackTop];
                 if (returnedValue == stack[--stackTop]) {
@@ -366,34 +372,33 @@ class SmallInterpreter {
               case 7: // new object allocation
                 low = ((SmallInt) stack[--stackTop]).value;
                 returnedValue = new SmallObject(stack[--stackTop], low);
-                while (low > 0)
-                  returnedValue.data[--low] = nilObject;
+                while (low > 0) returnedValue.data[--low] = nilObject;
                 break;
 
-              case 8: { // block invocation
-                returnedValue = stack[--stackTop]; // the block
-                high = ((SmallInt) returnedValue.data[7]).value; // arg location
-                low -= 2;
-                if (low >= 0) {
-                  temporaries = returnedValue.data[2].data;
-                  while (low >= 0) {
-                    temporaries[high + low--] = stack[--stackTop];
+              case 8:
+                { // block invocation
+                  returnedValue = stack[--stackTop]; // the block
+                  high = ((SmallInt) returnedValue.data[7]).value; // arg location
+                  low -= 2;
+                  if (low >= 0) {
+                    temporaries = returnedValue.data[2].data;
+                    while (low >= 0) {
+                      temporaries[high + low--] = stack[--stackTop];
+                    }
                   }
+                  contextData[5] = newInteger(stackTop);
+                  contextData[4] = newInteger(bytePointer);
+                  SmallObject newContext = new SmallObject(ContextClass, 10);
+                  for (int i = 0; i < 10; i++) newContext.data[i] = returnedValue.data[i];
+                  newContext.data[6] = contextData[6];
+                  newContext.data[5] = smallInts[0]; // stack top
+                  newContext.data[4] = returnedValue.data[9]; // starting addr
+                  low = newContext.data[3].data.length; // stack size
+                  newContext.data[3] = new SmallObject(ArrayClass, low); // new stack
+                  context = newContext;
+                  contextData = context.data;
+                  continue outerLoop;
                 }
-                contextData[5] = newInteger(stackTop);
-                contextData[4] = newInteger(bytePointer);
-                SmallObject newContext = new SmallObject(ContextClass, 10);
-                for (int i = 0; i < 10; i++)
-                  newContext.data[i] = returnedValue.data[i];
-                newContext.data[6] = contextData[6];
-                newContext.data[5] = smallInts[0]; // stack top
-                newContext.data[4] = returnedValue.data[9]; // starting addr
-                low = newContext.data[3].data.length; // stack size
-                newContext.data[3] = new SmallObject(ArrayClass, low); // new stack
-                context = newContext;
-                contextData = context.data;
-                continue outerLoop;
-              }
 
               case 9: // read a char from input
                 try {
@@ -403,17 +408,18 @@ class SmallInterpreter {
                 }
                 break;
 
-              case 10: { // small integer addition need to handle ovflow
-                low = ((SmallInt) stack[--stackTop]).value;
-                high = ((SmallInt) stack[--stackTop]).value;
-                long lhigh = ((long) high) + (long) low;
-                high += low;
-                if (lhigh == high) {
-                  returnedValue = newInteger(high);
-                } else {
-                  returnedValue = nilObject;
+              case 10:
+                { // small integer addition need to handle ovflow
+                  low = ((SmallInt) stack[--stackTop]).value;
+                  high = ((SmallInt) stack[--stackTop]).value;
+                  long lhigh = ((long) high) + (long) low;
+                  high += low;
+                  if (lhigh == high) {
+                    returnedValue = newInteger(high);
+                  } else {
+                    returnedValue = nilObject;
+                  }
                 }
-              }
                 break;
 
               case 11: // small integer quotient
@@ -436,30 +442,32 @@ class SmallInterpreter {
                 returnedValue = (low == high) ? trueObject : falseObject;
                 break;
 
-              case 15: { // small integer multiplication
-                low = ((SmallInt) stack[--stackTop]).value;
-                high = ((SmallInt) stack[--stackTop]).value;
-                long lhigh = ((long) high) * (long) low;
-                high *= low;
-                if (lhigh == high) {
-                  returnedValue = newInteger(high);
-                } else {
-                  returnedValue = nilObject;
+              case 15:
+                { // small integer multiplication
+                  low = ((SmallInt) stack[--stackTop]).value;
+                  high = ((SmallInt) stack[--stackTop]).value;
+                  long lhigh = ((long) high) * (long) low;
+                  high *= low;
+                  if (lhigh == high) {
+                    returnedValue = newInteger(high);
+                  } else {
+                    returnedValue = nilObject;
+                  }
                 }
-              }
                 break;
 
-              case 16: { // small integer subtraction
-                low = ((SmallInt) stack[--stackTop]).value;
-                high = ((SmallInt) stack[--stackTop]).value;
-                long lhigh = ((long) high) - (long) low;
-                high -= low;
-                if (lhigh == high) {
-                  returnedValue = newInteger(high);
-                } else {
-                  returnedValue = nilObject;
+              case 16:
+                { // small integer subtraction
+                  low = ((SmallInt) stack[--stackTop]).value;
+                  high = ((SmallInt) stack[--stackTop]).value;
+                  long lhigh = ((long) high) - (long) low;
+                  high -= low;
+                  if (lhigh == high) {
+                    returnedValue = newInteger(high);
+                  } else {
+                    returnedValue = nilObject;
+                  }
                 }
-              }
                 break;
 
               case 17: // small integer as string
@@ -504,65 +512,66 @@ class SmallInterpreter {
                 returnedValue = stack[--stackTop].copy(returnedValue);
                 break;
 
-              case 24: { // string append
-                SmallByteArray a = (SmallByteArray) stack[--stackTop];
-                SmallByteArray b = (SmallByteArray) stack[--stackTop];
-                low = a.values.length + b.values.length;
-                SmallByteArray n = new SmallByteArray(a.objClass, low);
-                high = 0;
-                for (int i = 0; i < a.values.length; i++)
-                  n.values[high++] = a.values[i];
-                for (int i = 0; i < b.values.length; i++)
-                  n.values[high++] = b.values[i];
-                returnedValue = n;
-              }
+              case 24:
+                { // string append
+                  SmallByteArray a = (SmallByteArray) stack[--stackTop];
+                  SmallByteArray b = (SmallByteArray) stack[--stackTop];
+                  low = a.values.length + b.values.length;
+                  SmallByteArray n = new SmallByteArray(a.objClass, low);
+                  high = 0;
+                  for (int i = 0; i < a.values.length; i++) n.values[high++] = a.values[i];
+                  for (int i = 0; i < b.values.length; i++) n.values[high++] = b.values[i];
+                  returnedValue = n;
+                }
                 break;
 
-              case 26: { // string compare
-                SmallByteArray a = (SmallByteArray) stack[--stackTop];
-                SmallByteArray b = (SmallByteArray) stack[--stackTop];
-                low = a.values.length;
-                high = b.values.length;
-                int s = (low < high) ? low : high;
-                int r = 0;
-                for (int i = 0; i < s; i++)
-                  if (a.values[i] < b.values[i]) {
-                    r = 1;
-                    break;
-                  } else if (b.values[i] < a.values[i]) {
-                    r = -1;
-                    break;
+              case 26:
+                { // string compare
+                  SmallByteArray a = (SmallByteArray) stack[--stackTop];
+                  SmallByteArray b = (SmallByteArray) stack[--stackTop];
+                  low = a.values.length;
+                  high = b.values.length;
+                  int s = (low < high) ? low : high;
+                  int r = 0;
+                  for (int i = 0; i < s; i++)
+                    if (a.values[i] < b.values[i]) {
+                      r = 1;
+                      break;
+                    } else if (b.values[i] < a.values[i]) {
+                      r = -1;
+                      break;
+                    }
+                  if (r == 0) {
+                    if (low < high) {
+                      r = 1;
+                    } else if (low > high) {
+                      r = -1;
+                    }
                   }
-                if (r == 0) {
-                  if (low < high) {
-                    r = 1;
-                  } else if (low > high) {
-                    r = -1;
-                  }
+                  returnedValue = newInteger(r);
                 }
-                returnedValue = newInteger(r);
-              }
                 break;
 
-              case 29: { // image save
-                SmallByteArray a = (SmallByteArray) stack[--stackTop];
-                String name = a.toString();
-                try {
-                  ImageWriter iw = new ImageWriter(new FileOutputStream(name));
-                  iw.writeObject(nilObject);
-                  iw.writeObject(trueObject);
-                  iw.writeObject(falseObject);
-                  iw.writeObject(smallInts);
-                  iw.writeObject(ArrayClass);
-                  iw.writeObject(BlockClass);
-                  iw.writeObject(ContextClass);
-                  iw.writeObject(IntegerClass);
-                  iw.finish();
-                } catch (Exception e) {
-                  throw new SmallException("got I/O Exception " + e, context);
+              case 29:
+                { // image save
+                  SmallByteArray a = (SmallByteArray) stack[--stackTop];
+                  String name = a.toString();
+                  try {
+                    ImageWriter iw = new ImageWriter(new FileOutputStream(name));
+                    iw.writeObject(nilObject);
+                    iw.writeObject(trueObject);
+                    iw.writeObject(falseObject);
+                    iw.writeObject(smallInts);
+                    iw.writeObject(ArrayClass);
+                    iw.writeObject(BlockClass);
+                    iw.writeObject(ContextClass);
+                    iw.writeObject(IntegerClass);
+                    iw.finish();
+                  } catch (Exception e) {
+                    throw new SmallException("got I/O Exception " + e, context);
+                  }
+                  returnedValue = a;
                 }
-                returnedValue = a;
-              }
                 break;
 
               case 30: // array at
@@ -571,45 +580,47 @@ class SmallInterpreter {
                 returnedValue = returnedValue.data[low - 1];
                 break;
 
-              case 31: {// array with: (add new item)
-                SmallObject oldar = stack[--stackTop];
-                low = oldar.data.length;
-                returnedValue = new SmallObject(oldar.objClass, low + 1);
-                for (int i = 0; i < low; i++)
-                  returnedValue.data[i] = oldar.data[i];
-                returnedValue.data[low] = stack[--stackTop];
-              }
+              case 31:
+                { // array with: (add new item)
+                  SmallObject oldar = stack[--stackTop];
+                  low = oldar.data.length;
+                  returnedValue = new SmallObject(oldar.objClass, low + 1);
+                  for (int i = 0; i < low; i++) returnedValue.data[i] = oldar.data[i];
+                  returnedValue.data[low] = stack[--stackTop];
+                }
                 break;
 
-              case 32: { // object add: increase object size
-                returnedValue = stack[--stackTop];
-                low = returnedValue.data.length;
-                SmallObject na[] = new SmallObject[low + 1];
-                for (int i = 0; i < low; i++)
-                  na[i] = returnedValue.data[i];
-                na[low] = stack[--stackTop];
-                returnedValue.data = na;
-              }
+              case 32:
+                { // object add: increase object size
+                  returnedValue = stack[--stackTop];
+                  low = returnedValue.data.length;
+                  SmallObject na[] = new SmallObject[low + 1];
+                  for (int i = 0; i < low; i++) na[i] = returnedValue.data[i];
+                  na[low] = stack[--stackTop];
+                  returnedValue.data = na;
+                }
                 break;
 
-              case 33: {// Sleep for a bit
-                low = ((SmallInt) stack[--stackTop]).value;
-                try {
-                  Thread.sleep(low);
-                } catch (Exception a) {
+              case 33:
+                { // Sleep for a bit
+                  low = ((SmallInt) stack[--stackTop]).value;
+                  try {
+                    Thread.sleep(low);
+                  } catch (Exception a) {
+                  }
                 }
-              }
                 break;
 
-              case 34: { // thread kill
-                if (parentThread != null) {
-                  parentThread.interrupt();
+              case 34:
+                { // thread kill
+                  if (parentThread != null) {
+                    parentThread.interrupt();
+                  }
+                  if (myThread != null) {
+                    myThread.interrupt();
+                  }
+                  return nilObject;
                 }
-                if (myThread != null) {
-                  myThread.interrupt();
-                }
-                return nilObject;
-              }
 
               case 35: // return current context
                 returnedValue = context;
@@ -617,58 +628,61 @@ class SmallInterpreter {
 
               case 36: // fast array creation
                 returnedValue = new SmallObject(ArrayClass, low);
-                for (int i = low - 1; i >= 0; i--)
-                  returnedValue.data[i] = stack[--stackTop];
+                for (int i = low - 1; i >= 0; i--) returnedValue.data[i] = stack[--stackTop];
                 break;
 
-              case 41: {// open file for output
-                try {
-                  FileOutputStream of = new FileOutputStream(stack[--stackTop].toString());
-                  PrintStream ps = new PrintStream(of);
-                  returnedValue = new SmallJavaObject(stack[--stackTop], ps);
-                } catch (IOException e) {
-                  throw new SmallException("I/O exception " + e, context);
-                }
-              }
-                break;
-
-              case 42: {// open file for input
-                try {
-                  FileInputStream of = new FileInputStream(stack[--stackTop].toString());
-                  DataInput ps = new DataInputStream(of);
-                  returnedValue = new SmallJavaObject(stack[--stackTop], ps);
-                } catch (IOException e) {
-                  throw new SmallException("I/O exception " + e, context);
-                }
-              }
-                break;
-
-              case 43: {// write a string
-                try {
-                  PrintStream ps = (PrintStream) ((SmallJavaObject) stack[--stackTop]).value;
-                  ps.print(stack[--stackTop]);
-                } catch (Exception e) {
-                  throw new SmallException("I/O exception " + e, context);
-                }
-              }
-                break;
-
-              case 44: { // read a string
-                try {
-                  DataInput di = (DataInput) ((SmallJavaObject) stack[--stackTop]).value;
-                  String line = di.readLine();
-                  if (line == null) {
-                    --stackTop;
-                    returnedValue = nilObject;
-                  } else {
-                    returnedValue = new SmallByteArray(stack[--stackTop], line);
+              case 41:
+                { // open file for output
+                  try {
+                    FileOutputStream of = new FileOutputStream(stack[--stackTop].toString());
+                    PrintStream ps = new PrintStream(of);
+                    returnedValue = new SmallJavaObject(stack[--stackTop], ps);
+                  } catch (IOException e) {
+                    throw new SmallException("I/O exception " + e, context);
                   }
-                } catch (EOFException e) {
-                  returnedValue = nilObject;
-                } catch (IOException f) {
-                  throw new SmallException("I/O exception " + f, context);
                 }
-              }
+                break;
+
+              case 42:
+                { // open file for input
+                  try {
+                    FileInputStream of = new FileInputStream(stack[--stackTop].toString());
+                    DataInput ps = new DataInputStream(of);
+                    returnedValue = new SmallJavaObject(stack[--stackTop], ps);
+                  } catch (IOException e) {
+                    throw new SmallException("I/O exception " + e, context);
+                  }
+                }
+                break;
+
+              case 43:
+                { // write a string
+                  try {
+                    PrintStream ps = (PrintStream) ((SmallJavaObject) stack[--stackTop]).value;
+                    ps.print(stack[--stackTop]);
+                  } catch (Exception e) {
+                    throw new SmallException("I/O exception " + e, context);
+                  }
+                }
+                break;
+
+              case 44:
+                { // read a string
+                  try {
+                    DataInput di = (DataInput) ((SmallJavaObject) stack[--stackTop]).value;
+                    String line = di.readLine();
+                    if (line == null) {
+                      --stackTop;
+                      returnedValue = nilObject;
+                    } else {
+                      returnedValue = new SmallByteArray(stack[--stackTop], line);
+                    }
+                  } catch (EOFException e) {
+                    returnedValue = nilObject;
+                  } catch (IOException f) {
+                    throw new SmallException("I/O exception " + f, context);
+                  }
+                }
                 break;
 
               case 50: // integer into float
@@ -676,87 +690,101 @@ class SmallInterpreter {
                 returnedValue = new SmallJavaObject(stack[--stackTop], Double.valueOf(low));
                 break;
 
-              case 51: { // addition of float
-                double a = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
-                double b = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
-                returnedValue = new SmallJavaObject(stack[--stackTop], Double.valueOf(a + b));
-              }
+              case 51:
+                { // addition of float
+                  double a = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
+                  double b = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
+                  returnedValue = new SmallJavaObject(stack[--stackTop], Double.valueOf(a + b));
+                }
                 break;
 
-              case 52: { // subtraction of float
-                double a = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
-                double b = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
-                returnedValue = new SmallJavaObject(stack[--stackTop], Double.valueOf(a - b));
-              }
+              case 52:
+                { // subtraction of float
+                  double a = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
+                  double b = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
+                  returnedValue = new SmallJavaObject(stack[--stackTop], Double.valueOf(a - b));
+                }
                 break;
 
-              case 53: { // multiplication of float
-                double a = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
-                double b = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
-                returnedValue = new SmallJavaObject(stack[--stackTop], Double.valueOf(a * b));
-              }
+              case 53:
+                { // multiplication of float
+                  double a = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
+                  double b = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
+                  returnedValue = new SmallJavaObject(stack[--stackTop], Double.valueOf(a * b));
+                }
                 break;
 
-              case 54: { // division of float
-                double a = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
-                double b = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
-                returnedValue = new SmallJavaObject(stack[--stackTop], Double.valueOf(a / b));
-              }
+              case 54:
+                { // division of float
+                  double a = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
+                  double b = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
+                  returnedValue = new SmallJavaObject(stack[--stackTop], Double.valueOf(a / b));
+                }
                 break;
 
-              case 55: { // less than test of float
-                double a = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
-                double b = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
-                returnedValue = (a < b) ? trueObject : falseObject;
-              }
+              case 55:
+                { // less than test of float
+                  double a = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
+                  double b = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
+                  returnedValue = (a < b) ? trueObject : falseObject;
+                }
                 break;
 
-              case 56: { // equality test of float
-                double a = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
-                double b = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
-                returnedValue = (a == b) ? trueObject : falseObject;
-              }
+              case 56:
+                { // equality test of float
+                  double a = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
+                  double b = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
+                  returnedValue = (a == b) ? trueObject : falseObject;
+                }
                 break;
 
-              case 57: { // float to int
-                double a = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
-                returnedValue = newInteger((int) a);
-              }
+              case 57:
+                { // float to int
+                  double a = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
+                  returnedValue = newInteger((int) a);
+                }
                 break;
 
               case 58: // random float
-                returnedValue = new SmallJavaObject(stack[--stackTop], Double.valueOf(Math.random()));
+                returnedValue =
+                    new SmallJavaObject(stack[--stackTop], Double.valueOf(Math.random()));
                 break;
 
               case 59: // print of float
                 returnedValue = stack[--stackTop];
-                returnedValue = new SmallByteArray(stack[--stackTop], String.valueOf(
-                    ((Double) ((SmallJavaObject) returnedValue).value).doubleValue()));
+                returnedValue =
+                    new SmallByteArray(
+                        stack[--stackTop],
+                        String.valueOf(
+                            ((Double) ((SmallJavaObject) returnedValue).value).doubleValue()));
                 break;
 
-              case 60: { // make window
-                Window dialog = uiFactory.makeWindow();
-                returnedValue = new SmallJavaObject(stack[--stackTop], dialog);
-              }
-                break;
-
-              case 61: { // show/hide text window
-                returnedValue = stack[--stackTop];
-                SmallJavaObject jo = (SmallJavaObject) stack[--stackTop];
-                if (returnedValue == trueObject) {
-                  ((Window) jo.value).setVisible(true);
-                } else {
-                  ((Window) jo.value).setVisible(false);
+              case 60:
+                { // make window
+                  Window dialog = uiFactory.makeWindow();
+                  returnedValue = new SmallJavaObject(stack[--stackTop], dialog);
                 }
-              }
                 break;
 
-              case 62: { // set content pane
-                SmallJavaObject tc = (SmallJavaObject) stack[--stackTop];
-                returnedValue = stack[--stackTop];
-                SmallJavaObject jd = (SmallJavaObject) returnedValue;
-                ((Window) jd.value).addChild((Widget) tc.value);
-              }
+              case 61:
+                { // show/hide text window
+                  returnedValue = stack[--stackTop];
+                  SmallJavaObject jo = (SmallJavaObject) stack[--stackTop];
+                  if (returnedValue == trueObject) {
+                    ((Window) jo.value).setVisible(true);
+                  } else {
+                    ((Window) jo.value).setVisible(false);
+                  }
+                }
+                break;
+
+              case 62:
+                { // set content pane
+                  SmallJavaObject tc = (SmallJavaObject) stack[--stackTop];
+                  returnedValue = stack[--stackTop];
+                  SmallJavaObject jd = (SmallJavaObject) returnedValue;
+                  ((Window) jd.value).addChild((Widget) tc.value);
+                }
                 break;
 
               case 63: // set size
@@ -769,47 +797,53 @@ class SmallInterpreter {
                 }
                 break;
 
-              case 64: { // add menu to window
-                SmallJavaObject menu = (SmallJavaObject) stack[--stackTop];
-                returnedValue = stack[--stackTop];
-                SmallJavaObject jo = (SmallJavaObject) returnedValue;
-                Window dialog = (Window) jo.value;
-                dialog.addMenu((Menu) menu.value);
-              }
+              case 64:
+                { // add menu to window
+                  SmallJavaObject menu = (SmallJavaObject) stack[--stackTop];
+                  returnedValue = stack[--stackTop];
+                  SmallJavaObject jo = (SmallJavaObject) returnedValue;
+                  Window dialog = (Window) jo.value;
+                  dialog.addMenu((Menu) menu.value);
+                }
                 break;
 
-              case 65: { // set title
-                SmallObject title = stack[--stackTop];
-                returnedValue = stack[--stackTop];
-                SmallJavaObject jd = (SmallJavaObject) returnedValue;
-                ((Window) jd.value).setTitle(title.toString());
-              }
+              case 65:
+                { // set title
+                  SmallObject title = stack[--stackTop];
+                  returnedValue = stack[--stackTop];
+                  SmallJavaObject jd = (SmallJavaObject) returnedValue;
+                  ((Window) jd.value).setTitle(title.toString());
+                }
                 break;
 
-              case 66: { // repaint window
-                returnedValue = stack[--stackTop];
-                SmallJavaObject jd = (SmallJavaObject) returnedValue;
-                ((Window) jd.value).redraw();
-              }
+              case 66:
+                { // repaint window
+                  returnedValue = stack[--stackTop];
+                  SmallJavaObject jd = (SmallJavaObject) returnedValue;
+                  ((Window) jd.value).redraw();
+                }
                 break;
 
-              case 70: { // new label panel
-                Label jl = uiFactory.makeLabel(stack[--stackTop].toString());
-                returnedValue = new SmallJavaObject(stack[--stackTop], jl);
-              }
+              case 70:
+                { // new label panel
+                  Label jl = uiFactory.makeLabel(stack[--stackTop].toString());
+                  returnedValue = new SmallJavaObject(stack[--stackTop], jl);
+                }
                 break;
 
-              case 71: { // new button
-                final SmallObject action = stack[--stackTop];
-                Button jb = uiFactory.makeButton(stack[--stackTop].toString());
-                returnedValue = new SmallJavaObject(stack[--stackTop], jb);
-                jb.addButtonListener(new Button.ButtonListener() {
-                  @Override
-                  public void buttonClicked() {
-                    new ActionThread(action, myThread).start();
-                  }
-                });
-              }
+              case 71:
+                { // new button
+                  final SmallObject action = stack[--stackTop];
+                  Button jb = uiFactory.makeButton(stack[--stackTop].toString());
+                  returnedValue = new SmallJavaObject(stack[--stackTop], jb);
+                  jb.addButtonListener(
+                      new Button.ButtonListener() {
+                        @Override
+                        public void buttonClicked() {
+                          new ActionThread(action, myThread).start();
+                        }
+                      });
+                }
                 break;
 
               case 72: // new text line
@@ -820,299 +854,327 @@ class SmallInterpreter {
                 returnedValue = new SmallJavaObject(stack[--stackTop], uiFactory.makeTextArea());
                 break;
 
-              case 74: { // new grid panel
-                SmallObject data = stack[--stackTop];
-                low = ((SmallInt) stack[--stackTop]).value;
-                high = ((SmallInt) stack[--stackTop]).value;
-                GridPanel gp = uiFactory.makeGridPanel(low, high);
-                for (int i = 0; i < data.data.length; i++) {
-                  gp.addChild(asWidget(data.data[i]));
-                }
-                returnedValue = new SmallJavaObject(stack[--stackTop], gp);
-              }
-                break;
-
-              case 75: { // new list panel
-                final SmallObject action = stack[--stackTop];
-                SmallObject data = stack[--stackTop];
-                returnedValue = stack[--stackTop];
-                ListWidget jl = uiFactory.makeListWidget(data.data);
-                returnedValue = new SmallJavaObject(returnedValue, jl);
-                jl.addSelectionListener(new ListWidget.Listener() {
-                  @Override
-                  public void itemSelected(int selectedIndex) {
-                    new ActionThread(action, myThread, selectedIndex).start();
+              case 74:
+                { // new grid panel
+                  SmallObject data = stack[--stackTop];
+                  low = ((SmallInt) stack[--stackTop]).value;
+                  high = ((SmallInt) stack[--stackTop]).value;
+                  GridPanel gp = uiFactory.makeGridPanel(low, high);
+                  for (int i = 0; i < data.data.length; i++) {
+                    gp.addChild(asWidget(data.data[i]));
                   }
-                });
-              }
+                  returnedValue = new SmallJavaObject(stack[--stackTop], gp);
+                }
                 break;
 
-              case 76: { // new border panel
-                BorderedPanel bp = uiFactory.makeBorderedPanel();
-                returnedValue = stack[--stackTop];
-                if (returnedValue != nilObject) {
-                  bp.addToCenter(asWidget(returnedValue));
+              case 75:
+                { // new list panel
+                  final SmallObject action = stack[--stackTop];
+                  SmallObject data = stack[--stackTop];
+                  returnedValue = stack[--stackTop];
+                  ListWidget jl = uiFactory.makeListWidget(data.data);
+                  returnedValue = new SmallJavaObject(returnedValue, jl);
+                  jl.addSelectionListener(
+                      new ListWidget.Listener() {
+                        @Override
+                        public void itemSelected(int selectedIndex) {
+                          new ActionThread(action, myThread, selectedIndex).start();
+                        }
+                      });
                 }
-                returnedValue = stack[--stackTop];
-                if (returnedValue != nilObject) {
-                  bp.addToWest(asWidget(returnedValue));
-                }
-                returnedValue = stack[--stackTop];
-                if (returnedValue != nilObject) {
-                  bp.addToEast(asWidget(returnedValue));
-                }
-                returnedValue = stack[--stackTop];
-                if (returnedValue != nilObject) {
-                  bp.addToSouth(asWidget(returnedValue));
-                }
-                returnedValue = stack[--stackTop];
-                if (returnedValue != nilObject) {
-                  bp.addToNorth(asWidget(returnedValue));
-                }
-                returnedValue = new SmallJavaObject(stack[--stackTop], bp);
-              }
                 break;
 
-              case 77: { // set image on label
-                SmallJavaObject img = (SmallJavaObject) stack[--stackTop];
-                SmallJavaObject lab = (SmallJavaObject) stack[--stackTop];
-                Object jo = lab.value;
-                if (jo instanceof Label) {
-                  ((Label) jo).setPicture((Picture) img.value);
-                }
-              }
-                break;
-
-              case 80: { // content of text area
-                SmallJavaObject jt = (SmallJavaObject) stack[--stackTop];
-                returnedValue = stack[--stackTop]; // class
-                Object jo = jt.value;
-                if (jo instanceof HasText) {
-                  HasText text = (HasText) jo;
-                  returnedValue = new SmallByteArray(returnedValue, text.getText());
-                } else {
-                  returnedValue = new SmallByteArray(returnedValue, "");
-                }
-              }
-                break;
-
-              case 81: {// content of selected text area
-                SmallJavaObject jt = (SmallJavaObject) stack[--stackTop];
-                returnedValue = stack[--stackTop]; // class
-                Object jo = jt.value;
-                if (jo instanceof HasText) {
-                  HasText text = (HasText) jo;
-                  returnedValue = new SmallByteArray(returnedValue, text.getSelectedText());
-                } else {
-                  returnedValue = new SmallByteArray(returnedValue, "");
-                }
-              }
-                break;
-
-              case 82: { // set text area
-                returnedValue = stack[--stackTop];// text
-                SmallJavaObject jt = (SmallJavaObject) stack[--stackTop];
-                Object jo = jt.value;
-                if (jo instanceof HasText) {
-                  ((HasText) jo).setText(returnedValue.toString());
-                }
-              }
-                break;
-
-              case 83: { // get selected index
-                SmallJavaObject jo = (SmallJavaObject) stack[--stackTop];
-                Object jl = jo.value;
-                if (jl instanceof ListWidget) {
-                  returnedValue = newInteger(((ListWidget) jl).getSelectedIndex());
-                } else if (jl instanceof Slider) {
-                  returnedValue = newInteger(((Slider) jl).getValue());
-                } else {
-                  returnedValue = newInteger(0);
-                }
-              }
-                break;
-
-              case 84: { // set list data
-                SmallObject data = stack[--stackTop];
-                returnedValue = stack[--stackTop];
-                SmallJavaObject jo = (SmallJavaObject) returnedValue;
-                Object jl = jo.value;
-                if (jl instanceof ListWidget) {
-                  ((ListWidget) jl).setData(data.data);
-                }
-              }
-                break;
-
-              case 85: { // new slider
-                final SmallObject action = stack[--stackTop];
-                int max = ((SmallInt) stack[--stackTop]).value + 10; // why?
-                int min = ((SmallInt) stack[--stackTop]).value;
-                SmallObject orient = stack[--stackTop];
-                Slider slider = uiFactory.makeSlider(orient == trueObject, min, max);
-                returnedValue = new SmallJavaObject(stack[--stackTop], slider);
-                if (action != nilObject) {
-                  slider.addValueAdjustedListener(new Slider.ValueAdjustedListener() {
-                    @Override
-                    public void valueAdjusted(int newValue) {
-                      new ActionThread(action, myThread, newValue).start();
-                    }
-                  });
-                }
-              }
-                break;
-
-              case 86: { // onMouseDown b
-                final SmallObject action = stack[--stackTop];
-                SmallJavaObject pan = (SmallJavaObject) stack[--stackTop];
-                Widget jo = (Widget) pan.value;
-                jo.addMouseDownListener(new Widget.MouseListener() {
-                  @Override
-                  public void mouseEvent(int x, int y) {
-                    new ActionThread(action, myThread, x, y).start();
+              case 76:
+                { // new border panel
+                  BorderedPanel bp = uiFactory.makeBorderedPanel();
+                  returnedValue = stack[--stackTop];
+                  if (returnedValue != nilObject) {
+                    bp.addToCenter(asWidget(returnedValue));
                   }
-                });
-              }
-                break;
-
-              case 87: { // onMouseUp b
-                final SmallObject action = stack[--stackTop];
-                SmallJavaObject pan = (SmallJavaObject) stack[--stackTop];
-                Widget jo = (Widget) pan.value;
-                jo.addMouseUpListener(new Widget.MouseListener() {
-                  @Override
-                  public void mouseEvent(int x, int y) {
-                    new ActionThread(action, myThread, x, y).start();
+                  returnedValue = stack[--stackTop];
+                  if (returnedValue != nilObject) {
+                    bp.addToWest(asWidget(returnedValue));
                   }
-                });
-              }
-                break;
-
-              case 88: { // onMouseMove b
-                final SmallObject action = stack[--stackTop];
-                SmallJavaObject pan = (SmallJavaObject) stack[--stackTop];
-                Widget jo = (Widget) pan.value;
-                jo.addMouseMoveListener(new Widget.MouseListener() {
-                  @Override
-                  public void mouseEvent(int x, int y) {
-                    new ActionThread(action, myThread, x, y).start();
+                  returnedValue = stack[--stackTop];
+                  if (returnedValue != nilObject) {
+                    bp.addToEast(asWidget(returnedValue));
                   }
-                });
-              }
-                break;
-
-              case 90: { // new menu
-                SmallObject title = stack[--stackTop]; // text
-                returnedValue = stack[--stackTop]; // class
-                Menu menu = uiFactory.makeMenu(title.toString());
-                returnedValue = new SmallJavaObject(returnedValue, menu);
-              }
-                break;
-
-              case 91: { // new menu item
-                final SmallObject action = stack[--stackTop];
-                final SmallObject text = stack[--stackTop];
-                returnedValue = stack[--stackTop];
-                SmallJavaObject mo = (SmallJavaObject) returnedValue;
-                Menu menu = (Menu) mo.value;
-                MenuItem mi = uiFactory.makeMenuItem(text.toString());
-                mi.addItemListener(new MenuItem.MenuItemListener() {
-                  @Override
-                  public void itemClicked() {
-                    new ActionThread(action, myThread).start();
+                  returnedValue = stack[--stackTop];
+                  if (returnedValue != nilObject) {
+                    bp.addToSouth(asWidget(returnedValue));
                   }
-                });
-                menu.addItem(mi);
-              }
+                  returnedValue = stack[--stackTop];
+                  if (returnedValue != nilObject) {
+                    bp.addToNorth(asWidget(returnedValue));
+                  }
+                  returnedValue = new SmallJavaObject(stack[--stackTop], bp);
+                }
+                break;
+
+              case 77:
+                { // set image on label
+                  SmallJavaObject img = (SmallJavaObject) stack[--stackTop];
+                  SmallJavaObject lab = (SmallJavaObject) stack[--stackTop];
+                  Object jo = lab.value;
+                  if (jo instanceof Label) {
+                    ((Label) jo).setPicture((Picture) img.value);
+                  }
+                }
+                break;
+
+              case 80:
+                { // content of text area
+                  SmallJavaObject jt = (SmallJavaObject) stack[--stackTop];
+                  returnedValue = stack[--stackTop]; // class
+                  Object jo = jt.value;
+                  if (jo instanceof HasText) {
+                    HasText text = (HasText) jo;
+                    returnedValue = new SmallByteArray(returnedValue, text.getText());
+                  } else {
+                    returnedValue = new SmallByteArray(returnedValue, "");
+                  }
+                }
+                break;
+
+              case 81:
+                { // content of selected text area
+                  SmallJavaObject jt = (SmallJavaObject) stack[--stackTop];
+                  returnedValue = stack[--stackTop]; // class
+                  Object jo = jt.value;
+                  if (jo instanceof HasText) {
+                    HasText text = (HasText) jo;
+                    returnedValue = new SmallByteArray(returnedValue, text.getSelectedText());
+                  } else {
+                    returnedValue = new SmallByteArray(returnedValue, "");
+                  }
+                }
+                break;
+
+              case 82:
+                { // set text area
+                  returnedValue = stack[--stackTop]; // text
+                  SmallJavaObject jt = (SmallJavaObject) stack[--stackTop];
+                  Object jo = jt.value;
+                  if (jo instanceof HasText) {
+                    ((HasText) jo).setText(returnedValue.toString());
+                  }
+                }
+                break;
+
+              case 83:
+                { // get selected index
+                  SmallJavaObject jo = (SmallJavaObject) stack[--stackTop];
+                  Object jl = jo.value;
+                  if (jl instanceof ListWidget) {
+                    returnedValue = newInteger(((ListWidget) jl).getSelectedIndex());
+                  } else if (jl instanceof Slider) {
+                    returnedValue = newInteger(((Slider) jl).getValue());
+                  } else {
+                    returnedValue = newInteger(0);
+                  }
+                }
+                break;
+
+              case 84:
+                { // set list data
+                  SmallObject data = stack[--stackTop];
+                  returnedValue = stack[--stackTop];
+                  SmallJavaObject jo = (SmallJavaObject) returnedValue;
+                  Object jl = jo.value;
+                  if (jl instanceof ListWidget) {
+                    ((ListWidget) jl).setData(data.data);
+                  }
+                }
+                break;
+
+              case 85:
+                { // new slider
+                  final SmallObject action = stack[--stackTop];
+                  int max = ((SmallInt) stack[--stackTop]).value + 10; // why?
+                  int min = ((SmallInt) stack[--stackTop]).value;
+                  SmallObject orient = stack[--stackTop];
+                  Slider slider = uiFactory.makeSlider(orient == trueObject, min, max);
+                  returnedValue = new SmallJavaObject(stack[--stackTop], slider);
+                  if (action != nilObject) {
+                    slider.addValueAdjustedListener(
+                        new Slider.ValueAdjustedListener() {
+                          @Override
+                          public void valueAdjusted(int newValue) {
+                            new ActionThread(action, myThread, newValue).start();
+                          }
+                        });
+                  }
+                }
+                break;
+
+              case 86:
+                { // onMouseDown b
+                  final SmallObject action = stack[--stackTop];
+                  SmallJavaObject pan = (SmallJavaObject) stack[--stackTop];
+                  Widget jo = (Widget) pan.value;
+                  jo.addMouseDownListener(
+                      new Widget.MouseListener() {
+                        @Override
+                        public void mouseEvent(int x, int y) {
+                          new ActionThread(action, myThread, x, y).start();
+                        }
+                      });
+                }
+                break;
+
+              case 87:
+                { // onMouseUp b
+                  final SmallObject action = stack[--stackTop];
+                  SmallJavaObject pan = (SmallJavaObject) stack[--stackTop];
+                  Widget jo = (Widget) pan.value;
+                  jo.addMouseUpListener(
+                      new Widget.MouseListener() {
+                        @Override
+                        public void mouseEvent(int x, int y) {
+                          new ActionThread(action, myThread, x, y).start();
+                        }
+                      });
+                }
+                break;
+
+              case 88:
+                { // onMouseMove b
+                  final SmallObject action = stack[--stackTop];
+                  SmallJavaObject pan = (SmallJavaObject) stack[--stackTop];
+                  Widget jo = (Widget) pan.value;
+                  jo.addMouseMoveListener(
+                      new Widget.MouseListener() {
+                        @Override
+                        public void mouseEvent(int x, int y) {
+                          new ActionThread(action, myThread, x, y).start();
+                        }
+                      });
+                }
+                break;
+
+              case 90:
+                { // new menu
+                  SmallObject title = stack[--stackTop]; // text
+                  returnedValue = stack[--stackTop]; // class
+                  Menu menu = uiFactory.makeMenu(title.toString());
+                  returnedValue = new SmallJavaObject(returnedValue, menu);
+                }
+                break;
+
+              case 91:
+                { // new menu item
+                  final SmallObject action = stack[--stackTop];
+                  final SmallObject text = stack[--stackTop];
+                  returnedValue = stack[--stackTop];
+                  SmallJavaObject mo = (SmallJavaObject) returnedValue;
+                  Menu menu = (Menu) mo.value;
+                  MenuItem mi = uiFactory.makeMenuItem(text.toString());
+                  mi.addItemListener(
+                      new MenuItem.MenuItemListener() {
+                        @Override
+                        public void itemClicked() {
+                          new ActionThread(action, myThread).start();
+                        }
+                      });
+                  menu.addItem(mi);
+                }
                 break;
 
               case 100: // new semaphore
                 returnedValue = new SmallJavaObject(stack[--stackTop], new Sema());
                 break;
 
-              case 101: { // semaphore wait
-                SmallJavaObject jo = (SmallJavaObject) stack[--stackTop];
-                try {
-                  returnedValue = ((Sema) jo.value).get();
-                } catch (InterruptedException e) {
-                  returnedValue = nilObject;
+              case 101:
+                { // semaphore wait
+                  SmallJavaObject jo = (SmallJavaObject) stack[--stackTop];
+                  try {
+                    returnedValue = ((Sema) jo.value).get();
+                  } catch (InterruptedException e) {
+                    returnedValue = nilObject;
+                  }
                 }
-              }
                 break;
 
-              case 102: { // semaphore set
-                returnedValue = stack[--stackTop];
-                SmallJavaObject jo = (SmallJavaObject) stack[--stackTop];
-                ((Sema) jo.value).set(returnedValue);
-              }
-                break;
-
-              case 110: { // new image
-                low = ((SmallInt) stack[--stackTop]).value;
-                high = ((SmallInt) stack[--stackTop]).value;
-                Picture img = uiFactory.makePicture(low, high);
-                returnedValue = new SmallJavaObject(stack[--stackTop], img);
-              }
-                break;
-
-              case 111: { // new image from file
-                SmallByteArray title = (SmallByteArray) stack[--stackTop];
-                returnedValue = stack[--stackTop];
-                Picture img = uiFactory.makePicture(title.toString());
-                returnedValue = new SmallJavaObject(returnedValue, img);
-              }
-                break;
-
-              case 113: { // draw image
-                SmallJavaObject img2 = (SmallJavaObject) stack[--stackTop];
-                low = ((SmallInt) stack[--stackTop]).value;
-                high = ((SmallInt) stack[--stackTop]).value;
-                SmallJavaObject img = (SmallJavaObject) stack[--stackTop];
-                Picture dest = (Picture) img;
-                Picture src = (Picture) img2;
-                dest.drawImage(src, low, high);
-              }
-                break;
-
-              case 114: { // draw text
-                SmallByteArray text = (SmallByteArray) stack[--stackTop];
-                low = ((SmallInt) stack[--stackTop]).value;
-                high = ((SmallInt) stack[--stackTop]).value;
-                int c = ((SmallInt) stack[--stackTop]).value;
-                SmallJavaObject img = (SmallJavaObject) stack[--stackTop];
-                Picture picture = (Picture) img.value;
-                picture.setColor(c);
-                picture.drawText(text.toString(), low, high);
-              }
-                break;
-
-              case 115: { // draw/fill circle
-                int s = ((SmallInt) stack[--stackTop]).value;
-                int h = ((SmallInt) stack[--stackTop]).value;
-                int w = ((SmallInt) stack[--stackTop]).value;
-                low = ((SmallInt) stack[--stackTop]).value;
-                high = ((SmallInt) stack[--stackTop]).value;
-                int c = ((SmallInt) stack[--stackTop]).value;
-                SmallJavaObject img = (SmallJavaObject) stack[--stackTop];
-                Picture picture = (Picture) img.value;
-                picture.setColor(c);
-                switch (s) {
-                  case 1:
-                    picture.drawOval(low, high, h, w);
-                    break;
-                  case 2:
-                    picture.fillOval(low, high, h, w);
-                    break;
-                  case 3:
-                    picture.drawRect(low, high, h, w);
-                    break;
-                  case 4:
-                    picture.fillRect(low, high, h, w);
-                    break;
-                  case 5:
-                    picture.drawLine(low, high, h, w);
-                    break;
+              case 102:
+                { // semaphore set
+                  returnedValue = stack[--stackTop];
+                  SmallJavaObject jo = (SmallJavaObject) stack[--stackTop];
+                  ((Sema) jo.value).set(returnedValue);
                 }
-              }
+                break;
+
+              case 110:
+                { // new image
+                  low = ((SmallInt) stack[--stackTop]).value;
+                  high = ((SmallInt) stack[--stackTop]).value;
+                  Picture img = uiFactory.makePicture(low, high);
+                  returnedValue = new SmallJavaObject(stack[--stackTop], img);
+                }
+                break;
+
+              case 111:
+                { // new image from file
+                  SmallByteArray title = (SmallByteArray) stack[--stackTop];
+                  returnedValue = stack[--stackTop];
+                  Picture img = uiFactory.makePicture(title.toString());
+                  returnedValue = new SmallJavaObject(returnedValue, img);
+                }
+                break;
+
+              case 113:
+                { // draw image
+                  SmallJavaObject img2 = (SmallJavaObject) stack[--stackTop];
+                  low = ((SmallInt) stack[--stackTop]).value;
+                  high = ((SmallInt) stack[--stackTop]).value;
+                  SmallJavaObject img = (SmallJavaObject) stack[--stackTop];
+                  Picture dest = (Picture) img;
+                  Picture src = (Picture) img2;
+                  dest.drawImage(src, low, high);
+                }
+                break;
+
+              case 114:
+                { // draw text
+                  SmallByteArray text = (SmallByteArray) stack[--stackTop];
+                  low = ((SmallInt) stack[--stackTop]).value;
+                  high = ((SmallInt) stack[--stackTop]).value;
+                  int c = ((SmallInt) stack[--stackTop]).value;
+                  SmallJavaObject img = (SmallJavaObject) stack[--stackTop];
+                  Picture picture = (Picture) img.value;
+                  picture.setColor(c);
+                  picture.drawText(text.toString(), low, high);
+                }
+                break;
+
+              case 115:
+                { // draw/fill circle
+                  int s = ((SmallInt) stack[--stackTop]).value;
+                  int h = ((SmallInt) stack[--stackTop]).value;
+                  int w = ((SmallInt) stack[--stackTop]).value;
+                  low = ((SmallInt) stack[--stackTop]).value;
+                  high = ((SmallInt) stack[--stackTop]).value;
+                  int c = ((SmallInt) stack[--stackTop]).value;
+                  SmallJavaObject img = (SmallJavaObject) stack[--stackTop];
+                  Picture picture = (Picture) img.value;
+                  picture.setColor(c);
+                  switch (s) {
+                    case 1:
+                      picture.drawOval(low, high, h, w);
+                      break;
+                    case 2:
+                      picture.fillOval(low, high, h, w);
+                      break;
+                    case 3:
+                      picture.drawRect(low, high, h, w);
+                      break;
+                    case 4:
+                      picture.fillRect(low, high, h, w);
+                      break;
+                    case 5:
+                      picture.drawLine(low, high, h, w);
+                      break;
+                  }
+                }
                 break;
 
               default:
@@ -1218,8 +1280,12 @@ class SmallInterpreter {
     }
   } // end of outer loop
 
-  private SmallObject methodLookup(SmallObject receiver, SmallByteArray messageSelector,
-      SmallObject context, SmallObject arguments) throws SmallException {
+  private SmallObject methodLookup(
+      SmallObject receiver,
+      SmallByteArray messageSelector,
+      SmallObject context,
+      SmallObject arguments)
+      throws SmallException {
     String name = messageSelector.toString();
     SmallObject cls;
     for (cls = receiver; cls != nilObject; cls = cls.data[1]) {
@@ -1240,8 +1306,8 @@ class SmallInterpreter {
     newArgs[1] =
         new SmallByteArray(messageSelector.objClass, "Unrecognized message selector: " + name);
     arguments.data = newArgs;
-    return methodLookup(receiver, new SmallByteArray(messageSelector.objClass, "error:"), context,
-        arguments);
+    return methodLookup(
+        receiver, new SmallByteArray(messageSelector.objClass, "error:"), context, arguments);
   }
 
   // create a new small integer
@@ -1260,15 +1326,13 @@ class SmallInterpreter {
     public ActionThread(SmallObject block, Thread myT) {
       myThread = myT;
       action = new SmallObject(ContextClass, 10);
-      for (int i = 0; i < 10; i++)
-        action.data[i] = block.data[i];
+      for (int i = 0; i < 10; i++) action.data[i] = block.data[i];
     }
 
     public ActionThread(SmallObject block, Thread myT, int v1) {
       myThread = myT;
       action = new SmallObject(ContextClass, 10);
-      for (int i = 0; i < 10; i++)
-        action.data[i] = block.data[i];
+      for (int i = 0; i < 10; i++) action.data[i] = block.data[i];
       int argLoc = ((SmallInt) action.data[7]).value;
       action.data[2].data[argLoc] = newInteger(v1);
     }
@@ -1276,8 +1340,7 @@ class SmallInterpreter {
     public ActionThread(SmallObject block, Thread myT, int v1, int v2) {
       myThread = myT;
       action = new SmallObject(ContextClass, 10);
-      for (int i = 0; i < 10; i++)
-        action.data[i] = block.data[i];
+      for (int i = 0; i < 10; i++) action.data[i] = block.data[i];
       int argLoc = ((SmallInt) action.data[7]).value;
       action.data[2].data[argLoc] = newInteger(v1);
       action.data[2].data[argLoc + 1] = newInteger(v2);

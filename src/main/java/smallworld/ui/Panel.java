@@ -1,5 +1,3 @@
 package smallworld.ui;
 
-public interface Panel extends Widget {
-
-}
+public interface Panel extends Widget {}
