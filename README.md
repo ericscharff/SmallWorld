@@ -21,7 +21,7 @@ This version extends the original in several ways:
 SmallWorld is built and run with Gradle.  Simply run
 
 ```
-./gradlew run
+gradle run
 ```
 
 and you're good to go! It will open a Swing-based user interface for
