@@ -108,20 +108,21 @@ public class SmallWorld {
       SmallObject StringClass = name.objClass;
       // now look for the method
       SmallObject methods = StringClass.data[2];
-      SmallObject doItMeth = null;
+      SmallObject doItMethod = null;
       for (int i = 0; i < methods.data.length; i++) {
         SmallObject aMethod = methods.data[i];
         if ("doIt".equals(aMethod.data[0].toString())) {
-          doItMeth = aMethod;
+          doItMethod = aMethod;
         }
       }
-      if (doItMeth == null) {
+      if (doItMethod == null) {
         System.out.println("can't find do it!!");
       } else {
         SmallByteArray rec = new SmallByteArray(StringClass, task);
         SmallObject args = new SmallObject(theInterpreter.ArrayClass, 1);
         args.data[0] = rec;
-        SmallObject ctx = theInterpreter.buildContext(theInterpreter.nilObject, args, doItMeth);
+        SmallObject ctx = theInterpreter.buildContext(
+            theInterpreter.nilObject, args, doItMethod);
         try {
           theInterpreter.execute(ctx, null, null);
         } catch (Exception ex) {
