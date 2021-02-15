@@ -10,7 +10,7 @@ import java.util.TreeMap;
 
 class ImageWriter {
   private final TreeMap<Integer, SmallObject> allObjects;
-  private int numSmallInts;
+  private int smallIntCount;
   private int objectIndex;
   private final HashMap<SmallObject, Integer> objectPool;
   private final DataOutputStream out;
@@ -22,7 +22,7 @@ class ImageWriter {
     roots = new ArrayList<>();
     this.out = new DataOutputStream(out);
     this.objectIndex = 0;
-    this.numSmallInts = 0;
+    this.smallIntCount = 0;
   }
 
   public void finish() throws IOException {
@@ -70,7 +70,7 @@ class ImageWriter {
       }
     }
     // Write the (special case) count of small integers
-    out.writeInt(numSmallInts);
+    out.writeInt(smallIntCount);
     // Finally, write out index of the roots, so they can be streamed back in
     for (Integer i : roots) {
       out.writeInt(i);
@@ -79,10 +79,10 @@ class ImageWriter {
   }
 
   public void writeObject(SmallInt[] ints) {
-    if (numSmallInts > 0) {
+    if (smallIntCount > 0) {
       throw new RuntimeException("Can only write ints one time");
     }
-    numSmallInts = ints.length;
+    smallIntCount = ints.length;
     for (SmallInt child : ints) {
       writeObject(child);
     }

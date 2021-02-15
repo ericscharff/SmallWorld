@@ -6,7 +6,7 @@ import java.io.InputStream;
 
 class ImageReader {
   private final DataInputStream in;
-  private int numSmallInts;
+  private int smallIntCount;
   private SmallObject[] objectPool;
 
   public ImageReader(InputStream in) {
@@ -74,13 +74,13 @@ class ImageReader {
         }
       }
     }
-    numSmallInts = in.readInt();
+    smallIntCount = in.readInt();
     // Stream now points to the first root
   }
 
   public SmallInt[] readSmallInts() throws IOException {
-    SmallInt[] ints = new SmallInt[numSmallInts];
-    for (int i = 0; i < numSmallInts; i++) {
+    SmallInt[] ints = new SmallInt[smallIntCount];
+    for (int i = 0; i < smallIntCount; i++) {
       ints[i] = (SmallInt) readObject();
     }
     return ints;
