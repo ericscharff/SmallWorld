@@ -1,4 +1,5 @@
 apply plugin: 'java'
 apply plugin: 'application'
 
+// mainClassName = 'smallworld.core.SmallWorldRepl'
 mainClassName = 'smallworld.core.SmallWorld'
