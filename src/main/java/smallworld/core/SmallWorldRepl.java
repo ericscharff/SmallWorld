@@ -52,9 +52,9 @@ public class SmallWorldRepl {
     }
     world.redraw();
     new doItListener("9 * 9 + 1").buttonClicked();
+    new doItListener("List methods size").buttonClicked();
     new doItListener("((9 * 9 + 1) < 82) printString").buttonClicked();
     new doItListener("((9 * 9 + 1) > 82) printString").buttonClicked();
-    new doItListener("List methods size").buttonClicked();
   }
 
   private GridPanel buildPanel(UIFactory factory) {
