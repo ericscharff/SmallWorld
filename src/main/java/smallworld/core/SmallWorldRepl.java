@@ -23,7 +23,7 @@ public class SmallWorldRepl {
     } catch (Exception e) {
       e.printStackTrace();
     }
-    doIt(interpreter, "9 * 8");
+    doIt(interpreter, "(9 / 8) class name");
   }
 
   private static void readImage(SmallInterpreter interpreter, InputStream s) throws Exception {
