@@ -10,132 +10,69 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 
 public class SmallWorldRepl {
-  private boolean done = false;
-  private final SmallInterpreter theInterpreter;
-  private final HasText output;
-
   public static void main(String[] args) {
-    new SmallWorldRepl(args);
-  }
-
-  private SmallWorldRepl(String[] args) {
     UIFactory factory = new NoOpUIFactory();
+    SmallInterpreter interpreter = new SmallInterpreter(factory);
 
-    theInterpreter = new SmallInterpreter(factory);
-
-    output = factory.makeTextField();
-
-    Window world = factory.makeWindow();
-    world.setTitle("Small World");
-    world.setSize(200, 150);
-    world.addCloseListener(
-        new Window.CloseListener() {
-          @Override
-          public void windowClosed() {
-            System.exit(0);
-          }
-        });
-    world.addChild(buildPanel(factory));
-
-    // now read the image
-    world.setVisible(true);
-    output.setText("Initializing image: wait ....");
-    world.redraw();
     try {
       if (args.length > 0) {
-        readImage(new FileInputStream(args[0]));
+        readImage(interpreter, new FileInputStream(args[0]));
       } else {
-        readImage(getClass().getResourceAsStream("/image"));
+        readImage(interpreter, SmallWorldRepl.class.getResourceAsStream("/image"));
       }
     } catch (Exception e) {
-      output.setText("caught exception:" + e);
+      e.printStackTrace();
     }
-    world.redraw();
-    new doItListener("9 * 9 + 1").buttonClicked();
-    new doItListener("List methods size").buttonClicked();
-    new doItListener("((9 * 9 + 1) < 82) printString").buttonClicked();
-    new doItListener("((9 * 9 + 1) > 82) printString").buttonClicked();
+    doIt(interpreter, "9 * 8");
   }
 
-  private GridPanel buildPanel(UIFactory factory) {
-    GridPanel p = factory.makeGridPanel(4, 1);
-    Button browserButton = factory.makeButton("class browser");
-    browserButton.addButtonListener(new doItListener("Class browser"));
-    p.addChild(browserButton);
-    Button saveButton = factory.makeButton("save image");
-    saveButton.addButtonListener(new doItListener("File saveImage: 'image'"));
-    p.addChild(saveButton);
-    Button quitButton = factory.makeButton("quit");
-    p.addChild(quitButton);
-    quitButton.addButtonListener(
-        new Button.ButtonListener() {
-          @Override
-          public void buttonClicked() {
-            // maybe later do something more intelligent
-            System.exit(0);
-          }
-        });
-    p.addChild(output);
-    return p;
+  private static void readImage(SmallInterpreter interpreter, InputStream s) throws Exception {
+    ImageReader ir = new ImageReader(s);
+    interpreter.nilObject = ir.readObject();
+    interpreter.trueObject = ir.readObject();
+    interpreter.falseObject = ir.readObject();
+    interpreter.smallInts = ir.readSmallInts();
+    interpreter.ArrayClass = ir.readObject();
+    interpreter.BlockClass = ir.readObject();
+    interpreter.ContextClass = ir.readObject();
+    interpreter.IntegerClass = ir.readObject();
+    out("image initialized");
   }
 
-  private void readImage(InputStream name) throws Exception {
-    ImageReader ir = new ImageReader(name);
-    theInterpreter.nilObject = ir.readObject();
-    theInterpreter.trueObject = ir.readObject();
-    theInterpreter.falseObject = ir.readObject();
-    theInterpreter.smallInts = ir.readSmallInts();
-    theInterpreter.ArrayClass = ir.readObject();
-    theInterpreter.BlockClass = ir.readObject();
-    theInterpreter.ContextClass = ir.readObject();
-    theInterpreter.IntegerClass = ir.readObject();
-    output.setText("image initialized");
-    done = true;
-  }
+  private static void doIt(SmallInterpreter interpreter, String task) {
+    out("Running task: " + task);
 
-  private class doItListener implements Button.ButtonListener {
-    private final String task;
-
-    public doItListener(String t) {
-      task = t;
+    // start from the basics
+    SmallObject TrueClass = interpreter.trueObject.objClass;
+    SmallObject name = TrueClass.data[0]; // a known string
+    SmallObject StringClass = name.objClass;
+    // now look for the method
+    SmallObject methods = StringClass.data[2];
+    SmallObject doItMethod = null;
+    for (int i = 0; i < methods.data.length; i++) {
+      SmallObject aMethod = methods.data[i];
+      if ("doIt".equals(aMethod.data[0].toString())) {
+        doItMethod = aMethod;
+      }
     }
-
-    @Override
-    public void buttonClicked() {
-      System.out.println("Running task: " + task);
-      if (!done) {
-        return; // not ready yet
-      }
-      output.setText(task);
-      // start from the basics
-      SmallObject TrueClass = theInterpreter.trueObject.objClass;
-      SmallObject name = TrueClass.data[0]; // a known string
-      SmallObject StringClass = name.objClass;
-      // now look for the method
-      SmallObject methods = StringClass.data[2];
-      SmallObject doItMethod = null;
-      for (int i = 0; i < methods.data.length; i++) {
-        SmallObject aMethod = methods.data[i];
-        if ("doIt".equals(aMethod.data[0].toString())) {
-          doItMethod = aMethod;
-        }
-      }
-      if (doItMethod == null) {
-        System.out.println("can't find do it!!");
-      } else {
-        SmallByteArray rec = new SmallByteArray(StringClass, task);
-        SmallObject args = new SmallObject(theInterpreter.ArrayClass, 1);
-        args.data[0] = rec;
-        SmallObject ctx = theInterpreter.buildContext(
-            theInterpreter.nilObject, args, doItMethod);
-        try {
-          System.out.println(theInterpreter.execute(ctx, null, null));
-        } catch (Exception ex) {
+    if (doItMethod == null) {
+      out("can't find do it!!");
+    } else {
+      SmallByteArray rec = new SmallByteArray(StringClass, task);
+      SmallObject args = new SmallObject(interpreter.ArrayClass, 1);
+      args.data[0] = rec;
+      SmallObject ctx = interpreter.buildContext(
+          interpreter.nilObject, args, doItMethod);
+      try {
+        out(interpreter.execute(ctx, null, null));
+      } catch (Exception ex) {
           ex.printStackTrace();
-          output.setText("exception: " + ex);
-        }
       }
-      System.out.println("Task complete");
     }
+    out("Task complete");
+  }
+
+  private static void out(Object o) {
+    System.out.println(o);
   }
 }
