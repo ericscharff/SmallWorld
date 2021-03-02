@@ -1,13 +1,9 @@
 package smallworld.core;
 
-import smallworld.ui.Button;
-import smallworld.ui.GridPanel;
-import smallworld.ui.HasText;
-import smallworld.ui.UIFactory;
-import smallworld.ui.Window;
-import smallworld.ui.noop.NoOpUIFactory;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import smallworld.ui.UIFactory;
+import smallworld.ui.noop.NoOpUIFactory;
 
 public class SmallWorldRepl {
   public static void main(String[] args) {
@@ -61,12 +57,11 @@ public class SmallWorldRepl {
       SmallByteArray rec = new SmallByteArray(StringClass, task);
       SmallObject args = new SmallObject(interpreter.ArrayClass, 1);
       args.data[0] = rec;
-      SmallObject ctx = interpreter.buildContext(
-          interpreter.nilObject, args, doItMethod);
+      SmallObject ctx = interpreter.buildContext(interpreter.nilObject, args, doItMethod);
       try {
         out(interpreter.execute(ctx, null, null));
       } catch (Exception ex) {
-          ex.printStackTrace();
+        ex.printStackTrace();
       }
     }
     out("Task complete");

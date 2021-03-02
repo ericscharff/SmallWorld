@@ -1,19 +1,5 @@
 package smallworld.ui.swing;
 
-import smallworld.core.SmallObject;
-import smallworld.ui.BorderedPanel;
-import smallworld.ui.Button;
-import smallworld.ui.GridPanel;
-import smallworld.ui.HasText;
-import smallworld.ui.Label;
-import smallworld.ui.ListWidget;
-import smallworld.ui.Menu;
-import smallworld.ui.MenuItem;
-import smallworld.ui.Picture;
-import smallworld.ui.Slider;
-import smallworld.ui.UIFactory;
-import smallworld.ui.Widget;
-import smallworld.ui.Window;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -49,6 +35,20 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import smallworld.core.SmallObject;
+import smallworld.ui.BorderedPanel;
+import smallworld.ui.Button;
+import smallworld.ui.GridPanel;
+import smallworld.ui.HasText;
+import smallworld.ui.Label;
+import smallworld.ui.ListWidget;
+import smallworld.ui.Menu;
+import smallworld.ui.MenuItem;
+import smallworld.ui.Picture;
+import smallworld.ui.Slider;
+import smallworld.ui.UIFactory;
+import smallworld.ui.Widget;
+import smallworld.ui.Window;
 
 public class SwingUIFactory implements UIFactory {
 

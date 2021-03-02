@@ -1,5 +1,12 @@
 package smallworld.core;
 
+import java.io.DataInput;
+import java.io.DataInputStream;
+import java.io.EOFException;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
 import smallworld.ui.BorderedPanel;
 import smallworld.ui.Button;
 import smallworld.ui.GridPanel;
@@ -13,13 +20,6 @@ import smallworld.ui.Slider;
 import smallworld.ui.UIFactory;
 import smallworld.ui.Widget;
 import smallworld.ui.Window;
-import java.io.DataInput;
-import java.io.DataInputStream;
-import java.io.EOFException;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
 
 /**
  * Little Smalltalk Interpreter written in Java.

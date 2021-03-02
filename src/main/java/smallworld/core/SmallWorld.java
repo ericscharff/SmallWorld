@@ -1,13 +1,13 @@
 package smallworld.core;
 
+import java.io.FileInputStream;
+import java.io.InputStream;
 import smallworld.ui.Button;
 import smallworld.ui.GridPanel;
 import smallworld.ui.HasText;
 import smallworld.ui.UIFactory;
 import smallworld.ui.Window;
 import smallworld.ui.swing.SwingUIFactory;
-import java.io.FileInputStream;
-import java.io.InputStream;
 
 public class SmallWorld {
   private boolean done = false;
@@ -121,8 +121,7 @@ public class SmallWorld {
         SmallByteArray rec = new SmallByteArray(StringClass, task);
         SmallObject args = new SmallObject(theInterpreter.ArrayClass, 1);
         args.data[0] = rec;
-        SmallObject ctx = theInterpreter.buildContext(
-            theInterpreter.nilObject, args, doItMethod);
+        SmallObject ctx = theInterpreter.buildContext(theInterpreter.nilObject, args, doItMethod);
         try {
           theInterpreter.execute(ctx, null, null);
         } catch (Exception ex) {
