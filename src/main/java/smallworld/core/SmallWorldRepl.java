@@ -19,7 +19,8 @@ public class SmallWorldRepl {
     } catch (Exception e) {
       e.printStackTrace();
     }
-    doIt(interpreter, "(9 / 8) class name");
+    doIt(interpreter, "(9 / 8) printString");
+    doIt(interpreter, "(25 * 25 * 25 * 25 * 25 * 25 * 25) printString");
   }
 
   private static void readImage(SmallInterpreter interpreter, InputStream s) throws Exception {
