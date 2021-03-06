@@ -5,25 +5,25 @@ import java.io.InputStream;
 import smallworld.ui.UIFactory;
 import smallworld.ui.noop.NoOpUIFactory;
 
-public class SmallWorldRepl {
-  public static void main(String[] args) {
+public class Runner {
+  private final SmallInterpreter interpreter;
+
+  public Runner(String imageName) {
     UIFactory factory = new NoOpUIFactory();
-    SmallInterpreter interpreter = new SmallInterpreter(factory);
+    interpreter = new SmallInterpreter(factory);
 
     try {
-      if (args.length > 0) {
-        readImage(interpreter, new FileInputStream(args[0]));
+      if (imageName != null) {
+        readImage(new FileInputStream(imageName));
       } else {
-        readImage(interpreter, SmallWorldRepl.class.getResourceAsStream("/image"));
+        readImage(Runner.class.getResourceAsStream("/image"));
       }
     } catch (Exception e) {
       e.printStackTrace();
     }
-    doIt(interpreter, "((1 / 3) + (9 / 8)) printString");
-    doIt(interpreter, "(25 * 25 * 25 * 25 * 25 * 25 * 25) printString");
   }
 
-  private static void readImage(SmallInterpreter interpreter, InputStream s) throws Exception {
+  private void readImage(InputStream s) throws Exception {
     ImageReader ir = new ImageReader(s);
     interpreter.nilObject = ir.readObject();
     interpreter.trueObject = ir.readObject();
@@ -36,7 +36,7 @@ public class SmallWorldRepl {
     out("image initialized");
   }
 
-  private static void doIt(SmallInterpreter interpreter, String task) {
+  private void doIt(String task) {
     out("Running task: " + task);
 
     // start from the basics
@@ -70,5 +70,11 @@ public class SmallWorldRepl {
 
   private static void out(Object o) {
     System.out.println(o);
+  }
+
+  public static void main(String[] args) {
+    Runner runner = new Runner(args.length > 0 ? args[0] : null);
+    runner.doIt("((1 / 3) + (9 / 8)) printString");
+    runner.doIt( "(25 * 25 * 25 * 25 * 25 * 25 * 25) printString");
   }
 }
