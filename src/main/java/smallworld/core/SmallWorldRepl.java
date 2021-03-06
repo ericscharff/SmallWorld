@@ -19,7 +19,7 @@ public class SmallWorldRepl {
     } catch (Exception e) {
       e.printStackTrace();
     }
-    doIt(interpreter, "(9 / 8) printString");
+    doIt(interpreter, "((1 / 3) + (9 / 8)) printString");
     doIt(interpreter, "(25 * 25 * 25 * 25 * 25 * 25 * 25) printString");
   }
 
