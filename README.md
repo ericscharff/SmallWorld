@@ -26,3 +26,30 @@ SmallWorld is built and run with Gradle. Simply run
 
 and you're good to go! It will open a Swing-based user interface for evaluating
 expressions, browsing classes, and so on.
+
+# SmallWorld from the command line
+
+It is possible to run a version of SmallWorld from the command line. Look at
+`build.gradle` and follow the instructions. Then, `:runJava` will present a
+prompt in the terminal. Typing commands at this prompt will cause the input
+string to be run ("doIt"). For example:
+
+```
+> Task :run
+image initialized
+SmallWorld> 3 + 2
+Running task: 3 + 2
+SmallInt: 5
+Task complete
+SmallWorld> 'hello' size
+Running task: 'hello' size
+SmallInt: 5
+Task complete
+SmallWorld> ((1 / 3) + (3 / 4)) printString
+Running task: ((1 / 3) + (3 / 4)) printString
+(13/12)
+Task complete
+SmallWorld>
+```
+
+Hit `Ctrl-D` to exit.

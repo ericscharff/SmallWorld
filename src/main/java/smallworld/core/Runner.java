@@ -1,7 +1,9 @@
 package smallworld.core;
 
+import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import smallworld.ui.UIFactory;
 import smallworld.ui.noop.NoOpUIFactory;
 
@@ -72,9 +74,20 @@ public class Runner {
     System.out.println(o);
   }
 
-  public static void main(String[] args) {
+  private static void prompt() {
+    System.out.print("SmallWorld> ");
+    System.out.flush();
+  }
+
+  public static void main(String[] args) throws Exception {
     Runner runner = new Runner(args.length > 0 ? args[0] : null);
-    runner.doIt("((1 / 3) + (9 / 8)) printString");
-    runner.doIt( "(25 * 25 * 25 * 25 * 25 * 25 * 25) printString");
+    BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+    String line;
+
+    prompt();
+    while ((line = reader.readLine()) != null) {
+      runner.doIt(line);
+      prompt();
+    }
   }
 }

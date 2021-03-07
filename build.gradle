@@ -1,5 +1,12 @@
 apply plugin: 'java'
 apply plugin: 'application'
 
-mainClassName = 'smallworld.core.Runner'
-//mainClassName = 'smallworld.core.SmallWorld'
+mainClassName = 'smallworld.core.SmallWorld'
+
+// To run the command line version of SmallWorld, comment out the mainClassName
+// above, and uncomment the following lines:
+
+// mainClassName = 'smallworld.core.Runner'
+// run{
+//   standardInput = System.in
+// }
