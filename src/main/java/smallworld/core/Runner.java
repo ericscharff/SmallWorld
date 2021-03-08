@@ -25,6 +25,17 @@ public class Runner {
     }
   }
 
+  public Runner(InputStream imageStream) {
+    UIFactory factory = new NoOpUIFactory();
+    interpreter = new SmallInterpreter(factory);
+
+    try {
+      readImage(imageStream);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
   private void readImage(InputStream s) throws Exception {
     ImageReader ir = new ImageReader(s);
     interpreter.nilObject = ir.readObject();

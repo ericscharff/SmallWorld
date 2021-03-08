@@ -25,14 +25,12 @@ public class Runner {
     }
   }
 
-  public Runner(InputStream imageName) {
+  public Runner(InputStream imageStream) {
     UIFactory factory = new NoOpUIFactory();
     interpreter = new SmallInterpreter(factory);
 
     try {
-      if (imageName != null) {
-        readImage(imageName);
-      }
+      readImage(imageStream);
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -51,7 +49,7 @@ public class Runner {
     out("image initialized");
   }
 
-  public void doIt(String task) {
+  private void doIt(String task) {
     out("Running task: " + task);
 
     // start from the basics
