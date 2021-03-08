@@ -49,7 +49,7 @@ public class Runner {
     out("image initialized");
   }
 
-  private void doIt(String task) {
+  public void doIt(String task) {
     out("Running task: " + task);
 
     // start from the basics
