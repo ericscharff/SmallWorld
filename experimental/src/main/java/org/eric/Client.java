@@ -11,13 +11,11 @@ import org.teavm.jso.dom.html.HTMLElement;
 public class Client {
     public static void main(String[] args) {
         HTMLDocument document = HTMLDocument.current();
-        System.out.println("a first line");
-        for (int i=0; i < 10; i++) {
-          HTMLElement div = document.createElement("div");
-          div.appendChild(document.createTextNode("TeaVM generated element: " + i));
-          document.getBody().appendChild(div);
-        }
+        HTMLElement div = document.createElement("div");
+        div.appendChild(document.createTextNode("TeaVM generated element: " + i));
+        document.getBody().appendChild(div);
         XMLHttpRequest xhr = XMLHttpRequest.create();
+
         xhr.onComplete(() -> receiveResponse((ArrayBuffer) xhr.getResponse()));
         xhr.open("GET", "image");
         xhr.setResponseType("arraybuffer");
