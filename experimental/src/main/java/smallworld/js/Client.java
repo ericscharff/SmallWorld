@@ -7,13 +7,18 @@ import org.teavm.jso.typedarrays.Int8Array;
 import org.teavm.jso.ajax.XMLHttpRequest;
 import org.teavm.jso.dom.html.HTMLDocument;
 import org.teavm.jso.dom.html.HTMLElement;
+import org.teavm.jso.dom.html.HTMLInputElement;
+import org.teavm.jso.dom.html.HTMLButtonElement;
 
 public class Client {
+    private static HTMLDocument document = HTMLDocument.current();
+    private static HTMLButtonElement doItButton = document.getElementById("hello-button").cast();
+    private static HTMLInputElement requestInput = document.getElementById("smalltalk").cast();
+    private static HTMLElement responsePanel = document.getElementById("response-panel");
+    private static Runner runner;
+
     public static void main(String[] args) {
-        HTMLDocument document = HTMLDocument.current();
-        HTMLElement div = document.createElement("div");
-        div.appendChild(document.createTextNode("TeaVM generated element"));
-        document.getBody().appendChild(div);
+        doItButton.listenClick(evt -> doIt());
         XMLHttpRequest xhr = XMLHttpRequest.create();
 
         xhr.onComplete(() -> receiveResponse((ArrayBuffer) xhr.getResponse()));
@@ -28,8 +33,15 @@ public class Client {
             for (int i = 0; i < bytes.length; ++i) {
                 bytes[i] = array.get(i);
             }
-        Runner runner = new Runner(new ByteArrayInputStream(bytes));
-        runner.doIt("3 + 2");
-        runner.doIt("((1 / 3) + (3 / 4)) printString");
+        runner = new Runner(new ByteArrayInputStream(bytes));
+//        runner.doIt("3 + 2");
+//        runner.doIt("((1 / 3) + (3 / 4)) printString");
+    }
+
+    private static void doIt() {
+      String result = runner.doIt(requestInput.getValue()).toString();
+        HTMLElement div = document.createElement("div");
+        div.appendChild(document.createTextNode("Result: " + result));
+        responsePanel.appendChild(div);
     }
 }

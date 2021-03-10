@@ -49,7 +49,7 @@ public class Runner {
     out("image initialized");
   }
 
-  public void doIt(String task) {
+  public Object doIt(String task) {
     out("Running task: " + task);
 
     // start from the basics
@@ -73,12 +73,14 @@ public class Runner {
       args.data[0] = rec;
       SmallObject ctx = interpreter.buildContext(interpreter.nilObject, args, doItMethod);
       try {
-        out(interpreter.execute(ctx, null, null));
+        return interpreter.execute(ctx, null, null);
       } catch (Exception ex) {
         ex.printStackTrace();
+      } finally {
+        out("Task complete");
       }
     }
-    out("Task complete");
+    return null;
   }
 
   private static void out(Object o) {
@@ -97,7 +99,7 @@ public class Runner {
 
     prompt();
     while ((line = reader.readLine()) != null) {
-      runner.doIt(line);
+      out(runner.doIt(line));
       prompt();
     }
   }

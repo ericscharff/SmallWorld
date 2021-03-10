@@ -1,11 +1,17 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Main page</title>
+    <title>Smallworld REPL</title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
     <script type="text/javascript" charset="utf-8" src="teavm/classes.js"></script>
   </head>
   <body onload="main()">
-    <!-- TODO: add HTML content -->
+    <h1>SmallWorld in the browser</h1>
+    <p>Type a Smalltalk expression in the input box, and then click doIt.</p>
+    <input id="smalltalk" value="3 + 2">
+    <button id="hello-button">doIt</button>
+    <h2>Results:</h2>
+    <div id="response-panel">
+    </div>
   </body>
 </html>
