@@ -1,4 +1,4 @@
-package org.eric;
+package smallworld.js;
 
 import smallworld.core.Runner;
 import java.io.ByteArrayInputStream;
@@ -12,12 +12,12 @@ public class Client {
     public static void main(String[] args) {
         HTMLDocument document = HTMLDocument.current();
         HTMLElement div = document.createElement("div");
-        div.appendChild(document.createTextNode("TeaVM generated element: " + i));
+        div.appendChild(document.createTextNode("TeaVM generated element"));
         document.getBody().appendChild(div);
         XMLHttpRequest xhr = XMLHttpRequest.create();
 
         xhr.onComplete(() -> receiveResponse((ArrayBuffer) xhr.getResponse()));
-        xhr.open("GET", "image");
+        xhr.open("GET", "WEB-INF/classes/image");
         xhr.setResponseType("arraybuffer");
         xhr.send();
     }
