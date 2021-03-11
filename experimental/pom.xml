@@ -14,6 +14,15 @@
   </properties>
 
   <dependencies>
+    <!-- smallworld library, previously compiled by gradle -->
+    <dependency>
+      <groupId>smallworld</groupId>
+      <artifactId>core</artifactId>
+      <version>0.1</version>
+      <scope>system</scope>
+      <systemPath>${project.basedir}/../build/libs/SmallWorld.jar</systemPath>
+    </dependency>
+
     <!-- Emulator of Java class library for TeaVM -->
     <dependency>
       <groupId>org.teavm</groupId>
