@@ -132,7 +132,10 @@ public class NoOpUIFactory implements UIFactory {
   private static class NoOpListWidget extends NoOpWidget implements ListWidget {
 
     public NoOpListWidget(SmallObject[] data) {
-      log("NoOpListWidget(" + data + ")");
+      log("NoOpListWidget()");
+      for (SmallObject o : data) {
+        log("  data: " + o);
+      }
     }
 
     @Override
@@ -143,7 +146,10 @@ public class NoOpUIFactory implements UIFactory {
 
     @Override
     public void setData(SmallObject[] data) {
-      log("listWidget setData(" + data + ")");
+      log("listWidget setData()");
+      for (SmallObject o : data) {
+        log("  data: " + o);
+      }
     }
 
     @Override
