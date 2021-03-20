@@ -30,12 +30,12 @@ expressions, browsing classes, and so on.
 # SmallWorld from the command line
 
 It is possible to run a version of SmallWorld from the command line. Look at
-`build.gradle` and follow the instructions. Then, `:runJava` will present a
-prompt in the terminal. Typing commands at this prompt will cause the input
-string to be run ("doIt"). For example:
+`build.gradle` for more details. You should then be able to run `./gradew
+commandline` to start tyhe interpreter. Typing commands at this prompt will
+cause the input string to be run ("doIt"). For example:
 
 ```
-> Task :run
+> Task :commandline
 image initialized
 SmallWorld> 3 + 2
 Running task: 3 + 2
