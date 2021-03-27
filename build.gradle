@@ -3,6 +3,7 @@ apply plugin: 'application'
 
 mainClassName = 'smallworld.core.SmallWorld'
 
+// To run the REPL, run ./gradlew commandline
 task(commandline, dependsOn: 'classes', type: JavaExec) {
   main = 'smallworld.core.Runner'
   classpath = sourceSets.main.runtimeClasspath
