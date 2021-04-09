@@ -18,7 +18,7 @@ $ mvn package
 ```
 
 This will create a war file, but you can simply run a Web server from
-`target/js-1.0-SNAPSHOT`. The index.html in that directory will run the
+`target/js-1.0-SNAPSHOT`. The `index.html` in that directory will run the
 SmallWorld text version and the doIt will appear in the javascript console.
 
 The trickiest bit was loading the image, which was hacked around by making an
