@@ -53,3 +53,9 @@ SmallWorld>
 ```
 
 Hit `Ctrl-D` to exit.
+
+# Experimental features
+
+In the `experimental` directory, there is a proof-of-concept of transpiling
+SmallWorld into JavaScript. Very simple expressions can be evaluated and
+printed within a Web page.
