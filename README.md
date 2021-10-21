@@ -37,9 +37,9 @@ cause the input string to be run ("printIt"). For example:
 ```
 > Task :commandline
 image initialized
-SmallWorld> 3 + 2
-Running task: 3 + 2
-SmallInt: 5
+SmallWorld> 3 + 4
+Running task: 3 + 4
+SmallInt: 7
 Task complete
 SmallWorld> 'hello' size
 Running task: 'hello' size
