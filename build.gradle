@@ -9,13 +9,3 @@ task(commandline, dependsOn: 'classes', type: JavaExec) {
   classpath = sourceSets.main.runtimeClasspath
   standardInput = System.in
 }
-
-
-
-
-
-
-
-
-
-// End of line
