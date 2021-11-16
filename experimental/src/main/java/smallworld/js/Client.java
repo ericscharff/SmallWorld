@@ -12,7 +12,7 @@ import smallworld.core.Runner;
 
 public class Client {
   private static HTMLDocument document = HTMLDocument.current();
-  private static HTMLButtonElement doItButton = document.getElementById("hello-button").cast();
+  private static HTMLButtonElement doItButton = document.getElementById("doit-button").cast();
   private static HTMLInputElement requestInput = document.getElementById("smalltalk").cast();
   private static HTMLElement responsePanel = document.getElementById("response-panel");
   private static Runner runner;
