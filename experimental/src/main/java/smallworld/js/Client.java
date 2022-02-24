@@ -17,7 +17,7 @@ public class Client {
   private static HTMLInputElement requestInput =
       document.getElementById("smalltalk").cast();
   private static HTMLElement responsePanel =
-      document.getElementById("response-panel");
+      document.getElementById("results-panel");
   private static Runner runner;
 
   public static void main(String[] args) {
