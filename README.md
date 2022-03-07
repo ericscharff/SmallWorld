@@ -1,7 +1,8 @@
 # SmallWorld
 
 SmallWorld is a very simple Smalltalk Virtual Machine written in Java. It is
-derived from Tim Budd's Smalltalk. The original import was taken from the state
+derived from Tim Budd's Smalltalk. The original import in this repository was taken
+from the state
 of the SmallWorld.tar file found at
 http://web.engr.oregonstate.edu/~budd/SmallWorld/Source/SmallWorld.tar dated
 10-Nov-2004
