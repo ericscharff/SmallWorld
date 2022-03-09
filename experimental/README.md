@@ -1,5 +1,5 @@
 This is an extremely hacky experiment to try to run SmallWorld in JavaScript.
-It is uses [TeaVM](http://teavm.org) to translate the Java bytecode into
+It uses [TeaVM](http://teavm.org) to translate the Java bytecode into
 JavaScript. Surprisingly, it was possible to get the command REPL version of
 SmallWorld working in a Web browser with few modifications.
 
