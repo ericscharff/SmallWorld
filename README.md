@@ -1,9 +1,8 @@
 # SmallWorld
 
 SmallWorld is a very simple Smalltalk Virtual Machine written in Java. It is
-derived from Tim Budd's Smalltalk. The original import in this repository was taken
-from the state
-of the SmallWorld.tar file found at
+derived from Tim Budd's Smalltalk. The original import in this repository was
+taken from the state of the SmallWorld.tar file found at
 http://web.engr.oregonstate.edu/~budd/SmallWorld/Source/SmallWorld.tar dated
 10-Nov-2004
 
@@ -12,8 +11,8 @@ This version extends the original in several ways:
 *   The serialization format no longer depends on Java serialization.
 *   The GUI has been decoupled from the interpreter.
 *   The Smalltalk classes are in plain text files for easier browsing. These
-    were extracted from the main image using `Class>>fileOut`. Also included
-    are some classes (related to the compiler) which are in the image, but not
+    were extracted from the main image using `Class>>fileOut`. Also included are
+    some classes (related to the compiler) which are in the image, but not
     listed in the main class browser (they were probably explicitly removed.)
 *   Code has been reformatted, and warnings/deprecation reduced.
 
@@ -58,5 +57,5 @@ Hit `Ctrl-D` to exit.
 # Experimental features
 
 In the `experimental` directory, there is a proof-of-concept of transpiling
-SmallWorld into JavaScript. Very simple expressions can be evaluated and
-printed within a Web page.
+SmallWorld into JavaScript. Very simple expressions can be evaluated and printed
+within a Web page.
