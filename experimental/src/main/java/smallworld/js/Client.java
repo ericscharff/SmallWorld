@@ -16,8 +16,8 @@ public class Client {
       document.getElementById("doit-button").cast();
   private static HTMLInputElement requestInput =
       document.getElementById("smalltalk").cast();
-  private static HTMLElement responsePanel =
-      document.getElementById("results-panel");
+  private static HTMLElement resultPanel =
+      document.getElementById("result-panel");
   private static Runner runner;
 
   public static void main(String[] args) {
@@ -45,6 +45,6 @@ public class Client {
     String result = runner.doIt(requestInput.getValue()).toString();
     HTMLElement div = document.createElement("div");
     div.appendChild(document.createTextNode("Result: " + result));
-    responsePanel.appendChild(div);
+    resultPanel.appendChild(div);
   }
 }
