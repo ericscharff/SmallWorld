@@ -32,7 +32,7 @@ expressions, browsing classes, and so on.
 
 It is possible to run a version of SmallWorld from the command line. Look at
 `build.gradle` for more details. You should then be able to run `./gradew
-commandline` to start tyhe interpreter. Typing commands at this prompt will
+commandLine` to start tyhe interpreter. Typing commands at this prompt will
 cause the input string to be run ("printIt"). For example:
 
 ```
