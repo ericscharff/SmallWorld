@@ -10,6 +10,7 @@
   <properties>
     <java.version>1.8</java.version>
     <teavm.version>0.6.1</teavm.version>
+    <smalleorld.version>0.1</smallworld.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
@@ -18,7 +19,7 @@
     <dependency>
       <groupId>smallworld</groupId>
       <artifactId>core</artifactId>
-      <version>0.1</version>
+      <version>${smallworld.version}</version>
       <scope>system</scope>
       <systemPath>${project.basedir}/../build/libs/SmallWorld.jar</systemPath>
     </dependency>
