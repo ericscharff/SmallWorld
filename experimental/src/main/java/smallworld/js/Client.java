@@ -10,6 +10,7 @@ import org.teavm.jso.typedarrays.ArrayBuffer;
 import org.teavm.jso.typedarrays.Int8Array;
 import smallworld.core.Runner;
 
+/** Run SmallWorld in a Web page. */
 public class Client {
   private static HTMLDocument document = HTMLDocument.current();
   private static HTMLButtonElement doItButton =
@@ -44,6 +45,7 @@ public class Client {
   private static void doIt() {
     String result = runner.doIt(requestInput.getValue()).toString();
     HTMLElement div = document.createElement("div");
+    div.classList.add("result");
     div.appendChild(document.createTextNode("Result: " + result));
     resultPanel.appendChild(div);
   }
