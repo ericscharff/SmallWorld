@@ -7,7 +7,6 @@ taken from the state of the SmallWorld.tar file found at
 http://web.engr.oregonstate.edu/~budd/SmallWorld/Source/SmallWorld.tar dated
 10-Nov-2004.
 
-
 This version extends the original in several ways:
 
 *   The serialization format no longer depends on Java serialization.
