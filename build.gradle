@@ -3,8 +3,8 @@ apply plugin: 'application'
 
 mainClassName = 'smallworld.core.SmallWorld'
 
-// To run the SmallWorld REPL, run ./gradlew commandLine
-task(commandLine, dependsOn: 'classes', type: JavaExec) {
+// To run the SmallWorld REPL, run ./gradlew repl
+task(repl, dependsOn: 'classes', type: JavaExec) {
   mainClass = 'smallworld.core.Runner'
   classpath = sourceSets.main.runtimeClasspath
   standardInput = System.in
