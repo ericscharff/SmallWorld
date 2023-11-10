@@ -3,7 +3,6 @@ package smallworld.ui;
 public interface Window {
   void setTitle(String title);
 
-
   void setVisible(boolean visible);
 
   void setSize(int width, int height);
