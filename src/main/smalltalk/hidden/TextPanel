@@ -1,4 +1,3 @@
-
 EVAL Class addNewClass: ( Object subclass: 'TextPanel' variables: '' classVariables: '')
 METHOD TextPanel
 getSelectedText
