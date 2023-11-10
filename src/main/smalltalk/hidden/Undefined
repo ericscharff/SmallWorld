@@ -1,3 +1,4 @@
+
 EVAL Class addNewClass: ( Object subclass: 'Undefined' variables: '' classVariables: '')
 METHOD Undefined
 isNil
