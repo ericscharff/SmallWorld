@@ -8,13 +8,13 @@ http://web.engr.oregonstate.edu/~budd/SmallWorld/Source/SmallWorld.tar dated
 
 This version extends the original in several ways:
 
-*   The serialization format no longer depends on Java serialization.
-*   The GUI has been decoupled from the interpreter.
-*   The Smalltalk classes are in plain text files for easier browsing. These
-    were extracted from the main image using `Class>>fileOut`. Also included are
-    some classes (related to the compiler) which are in the image, but not
-    listed in the main class browser (they were probably explicitly removed.)
-*   Code has been reformatted, and warnings/deprecation reduced.
+- The serialization format no longer depends on Java serialization.
+- The GUI has been decoupled from the interpreter.
+- The Smalltalk classes are in plain text files for easier browsing. These
+  were extracted from the main image using `Class>>fileOut`. Also included are
+  some classes (related to the compiler) which are in the image, but not
+  listed in the main class browser (they were probably explicitly removed.)
+- Code has been reformatted, and warnings/deprecation reduced.
 
 # Running SmallWorld
 
