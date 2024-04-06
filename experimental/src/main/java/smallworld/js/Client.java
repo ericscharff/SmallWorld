@@ -13,19 +13,16 @@ import smallworld.core.Runner;
 /** Run SmallWorld in a Web page. */
 public class Client {
   private static HTMLDocument document = HTMLDocument.current();
-  private static HTMLButtonElement doItButton =
-      document.getElementById("doit-button").cast();
-  private static HTMLInputElement requestInput =
-      document.getElementById("smalltalk").cast();
-  private static HTMLElement resultPanel =
-      document.getElementById("result-panel");
+  private static HTMLButtonElement doItButton = document.getElementById("doit-button").cast();
+  private static HTMLInputElement requestInput = document.getElementById("smalltalk").cast();
+  private static HTMLElement resultPanel = document.getElementById("result-panel");
   private static Runner runner;
 
   public static void main(String[] args) {
     doItButton.listenClick(evt -> doIt());
     XMLHttpRequest xhr = XMLHttpRequest.create();
 
-    xhr.onComplete(() -> receiveResponse((ArrayBuffer)xhr.getResponse()));
+    xhr.onComplete(() -> receiveResponse((ArrayBuffer) xhr.getResponse()));
     xhr.open("GET", "WEB-INF/classes/image");
     xhr.setResponseType("arraybuffer");
     xhr.send();
