@@ -35,8 +35,8 @@ public class Client {
       bytes[i] = array.get(i);
     }
     runner = new Runner(new ByteArrayInputStream(bytes));
-    //        runner.doIt("3 + 2");
     //        runner.doIt("((1 / 3) + (3 / 4)) printString");
+    //        runner.doIt("3 + 2");
   }
 
   private static void doIt() {
