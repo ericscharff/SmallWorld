@@ -10,10 +10,10 @@ This version extends the original in several ways:
 
 - The serialization format no longer depends on Java serialization.
 - The GUI has been decoupled from the interpreter.
-- The Smalltalk classes are in plain text files for easier browsing. These
-  were extracted from the main image using `Class>>fileOut`. Also included are
-  some classes (related to the compiler) which are in the image, but not
-  listed in the main class browser (they were probably explicitly removed.)
+- The Smalltalk classes are in plain text files for easier browsing. These were
+  extracted from the main image using `Class>>fileOut`. Also included are some
+  classes (related to the compiler) which are in the image, but not listed in
+  the main class browser (they were probably explicitly removed.)
 - Code has been reformatted, and warnings/deprecation reduced.
 
 # Running SmallWorld
@@ -30,9 +30,9 @@ expressions, browsing classes, and so on.
 # SmallWorld from the command line
 
 It is possible to run a version of SmallWorld from the command line. Look at
-`build.gradle` for more details. You should then be able to run `./gradew
-commandLine` to start tyhe interpreter. Typing commands at this prompt will
-cause the input string to be run ("printIt"). For example:
+`build.gradle` for more details. You should then be able to run
+`./gradew commandLine` to start tyhe interpreter. Typing commands at this prompt
+will cause the input string to be run ("printIt"). For example:
 
 ```
 > Task :commandline
