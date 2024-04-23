@@ -26,7 +26,7 @@ public class SmallWorld {
     output = factory.makeTextField();
 
     Window world = factory.makeWindow();
-    world.setTitle("Small World");
+    world.setTitle("SmallWorld");
     world.setSize(200, 150);
     world.addCloseListener(
         new Window.CloseListener() {
