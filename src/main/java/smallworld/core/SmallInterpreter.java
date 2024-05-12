@@ -50,22 +50,22 @@ class SmallInterpreter {
   }
 
   SmallObject buildContext(SmallObject oldContext, SmallObject arguments, SmallObject method) {
-    SmallObject context = new SmallObject(ContextClass, 7);
+    SmallObject context = new SmallObject(this.ContextClass, 7);
     context.data[0] = method;
     context.data[1] = arguments;
     // allocate temporaries
     int max = ((SmallInt) (method.data[4])).value;
     if (max > 0) {
-      context.data[2] = new SmallObject(ArrayClass, max);
+      context.data[2] = new SmallObject(this.ArrayClass, max);
       while (max > 0)
         // iniailize to nil
-        context.data[2].data[--max] = nilObject;
+        context.data[2].data[--max] = this.nilObject;
     }
     // allocate stack
     max = ((SmallInt) (method.data[3])).value;
-    context.data[3] = new SmallObject(ArrayClass, max);
-    context.data[4] = smallInts[0]; // byte pointer
-    context.data[5] = smallInts[0]; // stacktop
+    context.data[3] = new SmallObject(this.ArrayClass, max);
+    context.data[4] = this.newInteger(0); // byte pointer
+    context.data[5] = this.newInteger(0); // stacktop
     context.data[6] = oldContext;
     return context;
   }
@@ -153,16 +153,17 @@ class SmallInterpreter {
               case 7:
               case 8:
               case 9:
-                stack[stackTop++] = smallInts[low];
+                // All the SmallIntegers from [0..9] will return cached objects
+                stack[stackTop++] = this.newInteger(low);
                 break;
               case 10:
-                stack[stackTop++] = nilObject;
+                stack[stackTop++] = this.nilObject;
                 break;
               case 11:
-                stack[stackTop++] = trueObject;
+                stack[stackTop++] = this.trueObject;
                 break;
               case 12:
-                stack[stackTop++] = falseObject;
+                stack[stackTop++] = this.falseObject;
                 break;
               default:
                 throw new SmallException("Unknown constant " + low, context);
@@ -173,14 +174,14 @@ class SmallInterpreter {
             // low is argument location
             // next byte is goto value
             high = code[bytePointer++] & 0x0FF;
-            returnedValue = new SmallObject(BlockClass, 10);
+            returnedValue = new SmallObject(this.BlockClass, 10);
             tempa = returnedValue.data;
             tempa[0] = contextData[0]; // share method
             tempa[1] = contextData[1]; // share arguments
             tempa[2] = contextData[2]; // share temporaries
             tempa[3] = contextData[3]; // stack (later replaced)
             tempa[4] = newInteger(bytePointer); // current byte pointer
-            tempa[5] = smallInts[0]; // stacktop
+            tempa[5] = this.newInteger(0); // stacktop
             tempa[6] = contextData[6]; // previous context
             tempa[7] = newInteger(low); // argument location
             tempa[8] = context; // creating context
@@ -218,7 +219,7 @@ class SmallInterpreter {
             break;
 
           case 8: // MarkArguments
-            SmallObject newArguments = new SmallObject(ArrayClass, low);
+            SmallObject newArguments = new SmallObject(this.ArrayClass, low);
             tempa = newArguments.data; // direct access to array
             while (low > 0) tempa[--low] = stack[--stackTop];
             stack[stackTop++] = newArguments;
@@ -227,15 +228,8 @@ class SmallInterpreter {
           case 9: // SendMessage
             // save old context
             arguments = stack[--stackTop];
-            // expand newInteger in line
-            // contextData[5] = newInteger(stackTop);
-            contextData[5] =
-                (stackTop < 10) ? smallInts[stackTop] : new SmallInt(IntegerClass, stackTop);
-            // contextData[4] = newInteger(bytePointer);
-            contextData[4] =
-                (bytePointer < 10)
-                    ? smallInts[bytePointer]
-                    : new SmallInt(IntegerClass, bytePointer);
+            contextData[5] = this.newInteger(stackTop);
+            contextData[4] = this.newInteger(bytePointer);
             // now build new context
             if (literals == null) {
               literals = method.data[2].data;
@@ -271,10 +265,10 @@ class SmallInterpreter {
           case 10: // SendUnary
             if (low == 0) { // isNil
               SmallObject arg = stack[--stackTop];
-              stack[stackTop++] = (arg == nilObject) ? trueObject : falseObject;
+              stack[stackTop++] = (arg == this.nilObject) ? this.trueObject : this.falseObject;
             } else if (low == 1) { // notNil
               SmallObject arg = stack[--stackTop];
-              stack[stackTop++] = (arg != nilObject) ? trueObject : falseObject;
+              stack[stackTop++] = (arg != this.nilObject) ? this.trueObject : this.falseObject;
             } else {
               throw new SmallException("Illegal SendUnary " + low, context);
             }
@@ -289,10 +283,10 @@ class SmallInterpreter {
                 boolean done = true;
                 switch (low) {
                   case 0: // <
-                    returnedValue = (i < j) ? trueObject : falseObject;
+                    returnedValue = (i < j) ? this.trueObject : this.falseObject;
                     break;
                   case 1: // <=
-                    returnedValue = (i <= j) ? trueObject : falseObject;
+                    returnedValue = (i <= j) ? this.trueObject : this.falseObject;
                     break;
                   case 2: // +
                     long li = i + (long) j;
@@ -310,7 +304,7 @@ class SmallInterpreter {
                 }
               }
               // non optimized binary message
-              arguments = new SmallObject(ArrayClass, 2);
+              arguments = new SmallObject(this.ArrayClass, 2);
               arguments.data[1] = stack[--stackTop];
               arguments.data[0] = stack[--stackTop];
               contextData[5] = newInteger(stackTop);
@@ -339,9 +333,9 @@ class SmallInterpreter {
               case 1: // object identity
                 returnedValue = stack[--stackTop];
                 if (returnedValue == stack[--stackTop]) {
-                  returnedValue = trueObject;
+                  returnedValue = this.trueObject;
                 } else {
-                  returnedValue = falseObject;
+                  returnedValue = this.falseObject;
                 }
                 break;
 
@@ -372,7 +366,7 @@ class SmallInterpreter {
               case 7: // new object allocation
                 low = ((SmallInt) stack[--stackTop]).value;
                 returnedValue = new SmallObject(stack[--stackTop], low);
-                while (low > 0) returnedValue.data[--low] = nilObject;
+                while (low > 0) returnedValue.data[--low] = this.nilObject;
                 break;
 
               case 8:
@@ -388,13 +382,13 @@ class SmallInterpreter {
                   }
                   contextData[5] = newInteger(stackTop);
                   contextData[4] = newInteger(bytePointer);
-                  SmallObject newContext = new SmallObject(ContextClass, 10);
+                  SmallObject newContext = new SmallObject(this.ContextClass, 10);
                   for (int i = 0; i < 10; i++) newContext.data[i] = returnedValue.data[i];
                   newContext.data[6] = contextData[6];
-                  newContext.data[5] = smallInts[0]; // stack top
+                  newContext.data[5] = this.newInteger(0); // stack top
                   newContext.data[4] = returnedValue.data[9]; // starting addr
                   low = newContext.data[3].data.length; // stack size
-                  newContext.data[3] = new SmallObject(ArrayClass, low); // new stack
+                  newContext.data[3] = new SmallObject(this.ArrayClass, low); // new stack
                   context = newContext;
                   contextData = context.data;
                   continue outerLoop;
@@ -404,7 +398,7 @@ class SmallInterpreter {
                 try {
                   returnedValue = newInteger(System.in.read());
                 } catch (IOException e) {
-                  returnedValue = nilObject;
+                  returnedValue = this.nilObject;
                 }
                 break;
 
@@ -417,7 +411,7 @@ class SmallInterpreter {
                   if (lhigh == high) {
                     returnedValue = newInteger(high);
                   } else {
-                    returnedValue = nilObject;
+                    returnedValue = this.nilObject;
                   }
                 }
                 break;
@@ -439,7 +433,7 @@ class SmallInterpreter {
               case 14: // small int equality
                 low = ((SmallInt) stack[--stackTop]).value;
                 high = ((SmallInt) stack[--stackTop]).value;
-                returnedValue = (low == high) ? trueObject : falseObject;
+                returnedValue = (low == high) ? this.trueObject : this.falseObject;
                 break;
 
               case 15:
@@ -451,7 +445,7 @@ class SmallInterpreter {
                   if (lhigh == high) {
                     returnedValue = newInteger(high);
                   } else {
-                    returnedValue = nilObject;
+                    returnedValue = this.nilObject;
                   }
                 }
                 break;
@@ -465,7 +459,7 @@ class SmallInterpreter {
                   if (lhigh == high) {
                     returnedValue = newInteger(high);
                   } else {
-                    returnedValue = nilObject;
+                    returnedValue = this.nilObject;
                   }
                 }
                 break;
@@ -558,14 +552,14 @@ class SmallInterpreter {
                   String name = a.toString();
                   try {
                     ImageWriter iw = new ImageWriter(new FileOutputStream(name));
-                    iw.writeObject(nilObject);
-                    iw.writeObject(trueObject);
-                    iw.writeObject(falseObject);
-                    iw.writeObject(smallInts);
-                    iw.writeObject(ArrayClass);
-                    iw.writeObject(BlockClass);
-                    iw.writeObject(ContextClass);
-                    iw.writeObject(IntegerClass);
+                    iw.writeObject(this.nilObject);
+                    iw.writeObject(this.trueObject);
+                    iw.writeObject(this.falseObject);
+                    iw.writeObject(this.smallInts);
+                    iw.writeObject(this.ArrayClass);
+                    iw.writeObject(this.BlockClass);
+                    iw.writeObject(this.ContextClass);
+                    iw.writeObject(this.IntegerClass);
                     iw.finish();
                   } catch (Exception e) {
                     throw new SmallException("got I/O Exception " + e, context);
@@ -619,7 +613,7 @@ class SmallInterpreter {
                   if (myThread != null) {
                     myThread.interrupt();
                   }
-                  return nilObject;
+                  return this.nilObject;
                 }
 
               case 35: // return current context
@@ -627,7 +621,7 @@ class SmallInterpreter {
                 break;
 
               case 36: // fast array creation
-                returnedValue = new SmallObject(ArrayClass, low);
+                returnedValue = new SmallObject(this.ArrayClass, low);
                 for (int i = low - 1; i >= 0; i--) returnedValue.data[i] = stack[--stackTop];
                 break;
 
@@ -673,12 +667,12 @@ class SmallInterpreter {
                     String line = di.readLine();
                     if (line == null) {
                       --stackTop;
-                      returnedValue = nilObject;
+                      returnedValue = this.nilObject;
                     } else {
                       returnedValue = new SmallByteArray(stack[--stackTop], line);
                     }
                   } catch (EOFException e) {
-                    returnedValue = nilObject;
+                    returnedValue = this.nilObject;
                   } catch (IOException f) {
                     throw new SmallException("I/O exception " + f, context);
                   }
@@ -726,7 +720,7 @@ class SmallInterpreter {
                 { // less than test of float
                   double a = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
                   double b = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
-                  returnedValue = (a < b) ? trueObject : falseObject;
+                  returnedValue = (a < b) ? this.trueObject : this.falseObject;
                 }
                 break;
 
@@ -734,7 +728,7 @@ class SmallInterpreter {
                 { // equality test of float
                   double a = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
                   double b = ((Double) ((SmallJavaObject) stack[--stackTop]).value).doubleValue();
-                  returnedValue = (a == b) ? trueObject : falseObject;
+                  returnedValue = (a == b) ? this.trueObject : this.falseObject;
                 }
                 break;
 
@@ -761,7 +755,7 @@ class SmallInterpreter {
 
               case 60:
                 { // make window
-                  Window dialog = uiFactory.makeWindow();
+                  Window dialog = this.uiFactory.makeWindow();
                   returnedValue = new SmallJavaObject(stack[--stackTop], dialog);
                 }
                 break;
@@ -770,7 +764,7 @@ class SmallInterpreter {
                 { // show/hide text window
                   returnedValue = stack[--stackTop];
                   SmallJavaObject jo = (SmallJavaObject) stack[--stackTop];
-                  if (returnedValue == trueObject) {
+                  if (returnedValue == this.trueObject) {
                     ((Window) jo.value).setVisible(true);
                   } else {
                     ((Window) jo.value).setVisible(false);
@@ -826,7 +820,7 @@ class SmallInterpreter {
 
               case 70:
                 { // new label panel
-                  Label jl = uiFactory.makeLabel(stack[--stackTop].toString());
+                  Label jl = this.uiFactory.makeLabel(stack[--stackTop].toString());
                   returnedValue = new SmallJavaObject(stack[--stackTop], jl);
                 }
                 break;
@@ -834,7 +828,7 @@ class SmallInterpreter {
               case 71:
                 { // new button
                   final SmallObject action = stack[--stackTop];
-                  Button jb = uiFactory.makeButton(stack[--stackTop].toString());
+                  Button jb = this.uiFactory.makeButton(stack[--stackTop].toString());
                   returnedValue = new SmallJavaObject(stack[--stackTop], jb);
                   jb.addButtonListener(
                       new Button.ButtonListener() {
@@ -847,11 +841,11 @@ class SmallInterpreter {
                 break;
 
               case 72: // new text line
-                returnedValue = new SmallJavaObject(stack[--stackTop], uiFactory.makeTextField());
+                returnedValue = new SmallJavaObject(stack[--stackTop], this.uiFactory.makeTextField());
                 break;
 
               case 73: // new text area
-                returnedValue = new SmallJavaObject(stack[--stackTop], uiFactory.makeTextArea());
+                returnedValue = new SmallJavaObject(stack[--stackTop], this.uiFactory.makeTextArea());
                 break;
 
               case 74:
@@ -859,7 +853,7 @@ class SmallInterpreter {
                   SmallObject data = stack[--stackTop];
                   low = ((SmallInt) stack[--stackTop]).value;
                   high = ((SmallInt) stack[--stackTop]).value;
-                  GridPanel gp = uiFactory.makeGridPanel(low, high);
+                  GridPanel gp = this.uiFactory.makeGridPanel(low, high);
                   for (int i = 0; i < data.data.length; i++) {
                     gp.addChild(asWidget(data.data[i]));
                   }
@@ -872,7 +866,7 @@ class SmallInterpreter {
                   final SmallObject action = stack[--stackTop];
                   SmallObject data = stack[--stackTop];
                   returnedValue = stack[--stackTop];
-                  ListWidget jl = uiFactory.makeListWidget(data.data);
+                  ListWidget jl = this.uiFactory.makeListWidget(data.data);
                   returnedValue = new SmallJavaObject(returnedValue, jl);
                   jl.addSelectionListener(
                       new ListWidget.Listener() {
@@ -886,25 +880,25 @@ class SmallInterpreter {
 
               case 76:
                 { // new border panel
-                  BorderedPanel bp = uiFactory.makeBorderedPanel();
+                  BorderedPanel bp = this.uiFactory.makeBorderedPanel();
                   returnedValue = stack[--stackTop];
-                  if (returnedValue != nilObject) {
+                  if (returnedValue != this.nilObject) {
                     bp.addToCenter(asWidget(returnedValue));
                   }
                   returnedValue = stack[--stackTop];
-                  if (returnedValue != nilObject) {
+                  if (returnedValue != this.nilObject) {
                     bp.addToWest(asWidget(returnedValue));
                   }
                   returnedValue = stack[--stackTop];
-                  if (returnedValue != nilObject) {
+                  if (returnedValue != this.nilObject) {
                     bp.addToEast(asWidget(returnedValue));
                   }
                   returnedValue = stack[--stackTop];
-                  if (returnedValue != nilObject) {
+                  if (returnedValue != this.nilObject) {
                     bp.addToSouth(asWidget(returnedValue));
                   }
                   returnedValue = stack[--stackTop];
-                  if (returnedValue != nilObject) {
+                  if (returnedValue != this.nilObject) {
                     bp.addToNorth(asWidget(returnedValue));
                   }
                   returnedValue = new SmallJavaObject(stack[--stackTop], bp);
@@ -993,9 +987,9 @@ class SmallInterpreter {
                   int max = ((SmallInt) stack[--stackTop]).value + 10; // why?
                   int min = ((SmallInt) stack[--stackTop]).value;
                   SmallObject orient = stack[--stackTop];
-                  Slider slider = uiFactory.makeSlider(orient == trueObject, min, max);
+                  Slider slider = this.uiFactory.makeSlider(orient == this.trueObject, min, max);
                   returnedValue = new SmallJavaObject(stack[--stackTop], slider);
-                  if (action != nilObject) {
+                  if (action != this.nilObject) {
                     slider.addValueAdjustedListener(
                         new Slider.ValueAdjustedListener() {
                           @Override
@@ -1056,7 +1050,7 @@ class SmallInterpreter {
                 { // new menu
                   SmallObject title = stack[--stackTop]; // text
                   returnedValue = stack[--stackTop]; // class
-                  Menu menu = uiFactory.makeMenu(title.toString());
+                  Menu menu = this.uiFactory.makeMenu(title.toString());
                   returnedValue = new SmallJavaObject(returnedValue, menu);
                 }
                 break;
@@ -1068,7 +1062,7 @@ class SmallInterpreter {
                   returnedValue = stack[--stackTop];
                   SmallJavaObject mo = (SmallJavaObject) returnedValue;
                   Menu menu = (Menu) mo.value;
-                  MenuItem mi = uiFactory.makeMenuItem(text.toString());
+                  MenuItem mi = this.uiFactory.makeMenuItem(text.toString());
                   mi.addItemListener(
                       new MenuItem.MenuItemListener() {
                         @Override
@@ -1090,7 +1084,7 @@ class SmallInterpreter {
                   try {
                     returnedValue = ((Sema) jo.value).get();
                   } catch (InterruptedException e) {
-                    returnedValue = nilObject;
+                    returnedValue = this.nilObject;
                   }
                 }
                 break;
@@ -1107,7 +1101,7 @@ class SmallInterpreter {
                 { // new image
                   low = ((SmallInt) stack[--stackTop]).value;
                   high = ((SmallInt) stack[--stackTop]).value;
-                  Picture img = uiFactory.makePicture(low, high);
+                  Picture img = this.uiFactory.makePicture(low, high);
                   returnedValue = new SmallJavaObject(stack[--stackTop], img);
                 }
                 break;
@@ -1116,7 +1110,7 @@ class SmallInterpreter {
                 { // new image from file
                   SmallByteArray title = (SmallByteArray) stack[--stackTop];
                   returnedValue = stack[--stackTop];
-                  Picture img = uiFactory.makePicture(title.toString());
+                  Picture img = this.uiFactory.makePicture(title.toString());
                   returnedValue = new SmallJavaObject(returnedValue, img);
                 }
                 break;
@@ -1221,7 +1215,7 @@ class SmallInterpreter {
               case 7: // branch if true
                 low = code[bytePointer++] & 0x0FF;
                 returnedValue = stack[--stackTop];
-                if (returnedValue == trueObject) {
+                if (returnedValue == this.trueObject) {
                   bytePointer = low;
                 }
                 break;
@@ -1229,7 +1223,7 @@ class SmallInterpreter {
               case 8: // branch if false
                 low = code[bytePointer++] & 0x0FF;
                 returnedValue = stack[--stackTop];
-                if (returnedValue == falseObject) {
+                if (returnedValue == this.falseObject) {
                   bytePointer = low;
                 }
                 break;
@@ -1266,7 +1260,7 @@ class SmallInterpreter {
         }
       } // end of inner loop
 
-      if ((context == null) || (context == nilObject)) {
+      if ((context == null) || (context == this.nilObject)) {
         if (debug) {
           System.out.println("lookups " + lookup + " cached " + cached);
         }
@@ -1288,7 +1282,7 @@ class SmallInterpreter {
       throws SmallException {
     String name = messageSelector.toString();
     SmallObject cls;
-    for (cls = receiver; cls != nilObject; cls = cls.data[1]) {
+    for (cls = receiver; cls != this.nilObject; cls = cls.data[1]) {
       SmallObject dict = cls.data[2]; // dictionary in class
       for (int i = 0; i < dict.data.length; i++) {
         SmallObject aMethod = dict.data[i];
@@ -1313,9 +1307,9 @@ class SmallInterpreter {
   // create a new small integer
   SmallInt newInteger(int val) {
     if ((val >= 0) && (val < 10)) {
-      return smallInts[val];
+      return this.smallInts[val];
     } else {
-      return new SmallInt(IntegerClass, val);
+      return new SmallInt(this.IntegerClass, val);
     }
   }
 
