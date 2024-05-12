@@ -1,11 +1,15 @@
-apply plugin: 'java'
-apply plugin: 'application'
+plugins {
+  id 'application'
+}
 
-mainClassName = 'smallworld.core.SmallWorld'
+application {
+  // Run the repl
+  // mainClass = 'smallworld.core.Runner'
 
-// To run the experimental SmallWorld console REPL, run `./gradlew repl`
-task(repl, dependsOn: 'classes', type: JavaExec) {
-  mainClass = 'smallworld.core.Runner'
-  classpath = sourceSets.main.runtimeClasspath
+  // Run the gui
+  mainClass = 'smallworld.core.SmallWorld'
+}
+
+run {
   standardInput = System.in
 }

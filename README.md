@@ -30,9 +30,9 @@ expressions, browsing classes, and so on.
 # SmallWorld from the command line
 
 It is possible to run a version of SmallWorld from the command line. Look at
-`build.gradle` for more details. You should then be able to run
-`./gradew commandLine` to start tyhe interpreter. Typing commands at this prompt
-will cause the input string to be run ("printIt"). For example:
+`build.gradle` for more details. If you change to the repl main class, then
+`./gradlew --console=plain run` will start the interpreter. The text that you
+enter will be compiled and the result printed with `printIt`. For example:
 
 ```
 > Task :commandline
