@@ -98,10 +98,9 @@ public class Runner {
     String line;
 
     prompt();
-    runner.doIt("3 + 2");
-    //while ((line = reader.readLine()) != null) {
-    //  out(runner.doIt(line));
-    //  prompt();
-    //}
+    while ((line = reader.readLine()) != null) {
+      out(runner.doIt(line));
+      prompt();
+    }
   }
 }

@@ -109,7 +109,6 @@ class SmallInterpreter {
           low = code[bytePointer++] & 0x0FF;
         }
 
-        System.out.println("opcode " + high);
         switch (high) {
           case 1: // PushInstance
             if (arguments == null) {
@@ -242,7 +241,7 @@ class SmallInterpreter {
               literals = method.data[2].data;
             }
             returnedValue = literals[low]; // message selector
-            System.out.println("Sending " + returnedValue);
+            // System.out.println("Sending " + returnedValue);
             // System.out.println("Arguments " + arguments);
             // System.out.println("Arguments receiver " + arguments.data[0]);
             // System.out.println("Arguments class " + arguments.data[0].objClass);
@@ -336,7 +335,6 @@ class SmallInterpreter {
 
           case 13: // Do Primitive, low is arg count, next byte is number
             high = code[bytePointer++] & 0x0FF;
-            System.out.println("Primitive " + high);
             switch (high) {
               case 1: // object identity
                 returnedValue = stack[--stackTop];
@@ -1186,7 +1184,6 @@ class SmallInterpreter {
             break;
 
           case 15: // Do Special
-            System.out.println("Special " + low);
             switch (low) {
               case 1: // self return
                 if (arguments == null) {
