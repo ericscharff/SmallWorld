@@ -4,10 +4,10 @@ plugins {
 
 application {
   // Run the repl
-  // mainClass = 'smallworld.core.Runner'
+  mainClass = 'smallworld.core.Runner'
 
   // Run the gui
-  mainClass = 'smallworld.core.SmallWorld'
+  //mainClass = 'smallworld.core.SmallWorld'
 }
 
 run {
