@@ -59,3 +59,4 @@ Hit `Ctrl-D` to exit.
 In the `experimental` directory, there is a proof-of-concept of transpiling
 SmallWorld into JavaScript. Very simple expressions can be evaluated and printed
 within a Web page.
+Wed Apr  2 08:12:52 AM MDT 2025
