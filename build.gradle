@@ -3,7 +3,7 @@ plugins {
 }
 
 application {
-  // Run the repl
+  // Run the REPL
   // mainClass = 'smallworld.core.Runner'
 
   // Run the gui
