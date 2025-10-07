@@ -8,6 +8,7 @@ import smallworld.ui.UIFactory;
 import smallworld.ui.noop.NoOpUIFactory;
 
 public class Runner {
+
   private final SmallInterpreter interpreter;
 
   public Runner(String imageName) {
@@ -71,7 +72,11 @@ public class Runner {
       SmallByteArray rec = new SmallByteArray(StringClass, task);
       SmallObject args = new SmallObject(interpreter.ArrayClass, 1);
       args.data[0] = rec;
-      SmallObject ctx = interpreter.buildContext(interpreter.nilObject, args, doItMethod);
+      SmallObject ctx = interpreter.buildContext(
+        interpreter.nilObject,
+        args,
+        doItMethod
+      );
       try {
         return interpreter.execute(ctx, null, null);
       } catch (Exception ex) {
@@ -94,7 +99,9 @@ public class Runner {
 
   public static void main(String[] args) throws Exception {
     Runner runner = new Runner(args.length > 0 ? args[0] : null);
-    BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+    BufferedReader reader = new BufferedReader(
+      new InputStreamReader(System.in)
+    );
     String line;
 
     prompt();

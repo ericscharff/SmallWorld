@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 
 class ImageWriter {
+
   private final TreeMap<Integer, SmallObject> allObjects;
   private int smallIntCount;
   private int objectIndex;

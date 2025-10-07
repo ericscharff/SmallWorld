@@ -1,6 +1,7 @@
 package smallworld.core;
 
 class SmallInt extends SmallObject {
+
   public int value;
 
   public SmallInt(SmallObject IntegerClass, int v) {

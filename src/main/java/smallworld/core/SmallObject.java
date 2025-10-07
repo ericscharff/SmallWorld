@@ -1,6 +1,7 @@
 package smallworld.core;
 
 public class SmallObject {
+
   public SmallObject[] data;
   public SmallObject objClass;
 

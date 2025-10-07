@@ -69,7 +69,11 @@ public class SwingUIFactory implements UIFactory {
 
   @Override
   public Picture makePicture(int width, int height) {
-    BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+    BufferedImage image = new BufferedImage(
+      width,
+      height,
+      BufferedImage.TYPE_INT_RGB
+    );
     SwingPicture swingPicture = new SwingPicture(image);
     swingPicture.clear();
     return swingPicture;
@@ -127,53 +131,55 @@ public class SwingUIFactory implements UIFactory {
   }
 
   private abstract static class SwingWidget implements Widget {
+
     protected abstract JComponent getComponent();
 
     protected abstract JComponent getComponentOrScrollPane();
 
     @Override
     public void addMouseDownListener(final MouseListener listener) {
-      getComponent()
-          .addMouseListener(
-              new MouseAdapter() {
-                @Override
-                public void mousePressed(MouseEvent e) {
-                  listener.mouseEvent(e.getX(), e.getY());
-                }
-              });
+      getComponent().addMouseListener(
+        new MouseAdapter() {
+          @Override
+          public void mousePressed(MouseEvent e) {
+            listener.mouseEvent(e.getX(), e.getY());
+          }
+        }
+      );
     }
 
     @Override
     public void addMouseUpListener(final MouseListener listener) {
-      getComponent()
-          .addMouseListener(
-              new MouseAdapter() {
-                @Override
-                public void mouseReleased(MouseEvent e) {
-                  listener.mouseEvent(e.getX(), e.getY());
-                }
-              });
+      getComponent().addMouseListener(
+        new MouseAdapter() {
+          @Override
+          public void mouseReleased(MouseEvent e) {
+            listener.mouseEvent(e.getX(), e.getY());
+          }
+        }
+      );
     }
 
     @Override
     public void addMouseMoveListener(final MouseListener listener) {
-      getComponent()
-          .addMouseMotionListener(
-              new MouseMotionListener() {
-                @Override
-                public void mouseMoved(MouseEvent e) {
-                  listener.mouseEvent(e.getX(), e.getY());
-                }
+      getComponent().addMouseMotionListener(
+        new MouseMotionListener() {
+          @Override
+          public void mouseMoved(MouseEvent e) {
+            listener.mouseEvent(e.getX(), e.getY());
+          }
 
-                @Override
-                public void mouseDragged(MouseEvent e) {
-                  listener.mouseEvent(e.getX(), e.getY());
-                }
-              });
+          @Override
+          public void mouseDragged(MouseEvent e) {
+            listener.mouseEvent(e.getX(), e.getY());
+          }
+        }
+      );
     }
   }
 
   private static class SwingButton extends SwingWidget implements Button {
+
     private final JButton jButton;
 
     public SwingButton(String label) {
@@ -183,12 +189,13 @@ public class SwingUIFactory implements UIFactory {
     @Override
     public void addButtonListener(final ButtonListener listener) {
       jButton.addActionListener(
-          new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-              listener.buttonClicked();
-            }
-          });
+        new ActionListener() {
+          @Override
+          public void actionPerformed(ActionEvent e) {
+            listener.buttonClicked();
+          }
+        }
+      );
     }
 
     @Override
@@ -203,6 +210,7 @@ public class SwingUIFactory implements UIFactory {
   }
 
   private static class SwingLabel extends SwingWidget implements Label {
+
     private final JLabel jLabel;
     private final JScrollPane scrollPane;
 
@@ -231,7 +239,10 @@ public class SwingUIFactory implements UIFactory {
     }
   }
 
-  private static class SwingListWidget extends SwingWidget implements ListWidget {
+  private static class SwingListWidget
+    extends SwingWidget
+    implements ListWidget {
+
     private final JList<SmallObject> jList;
     private final JScrollPane scrollPane;
 
@@ -255,14 +266,15 @@ public class SwingUIFactory implements UIFactory {
     @Override
     public void addSelectionListener(final Listener listener) {
       jList.addListSelectionListener(
-          new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-              if (!e.getValueIsAdjusting() && (jList.getSelectedIndex() >= 0)) {
-                listener.itemSelected(jList.getSelectedIndex() + 1);
-              }
+        new ListSelectionListener() {
+          @Override
+          public void valueChanged(ListSelectionEvent e) {
+            if (!e.getValueIsAdjusting() && (jList.getSelectedIndex() >= 0)) {
+              listener.itemSelected(jList.getSelectedIndex() + 1);
             }
-          });
+          }
+        }
+      );
     }
 
     @Override
@@ -277,23 +289,29 @@ public class SwingUIFactory implements UIFactory {
   }
 
   private static class SwingSlider extends SwingWidget implements Slider {
+
     private final JScrollBar scrollBar;
 
     public SwingSlider(boolean orientVertically, int min, int max) {
-      scrollBar =
-          new JScrollBar(
-              (orientVertically ? JScrollBar.VERTICAL : JScrollBar.HORIZONTAL), min, 10, min, max);
+      scrollBar = new JScrollBar(
+        (orientVertically ? JScrollBar.VERTICAL : JScrollBar.HORIZONTAL),
+        min,
+        10,
+        min,
+        max
+      );
     }
 
     @Override
     public void addValueAdjustedListener(final ValueAdjustedListener listener) {
       scrollBar.addAdjustmentListener(
-          new AdjustmentListener() {
-            @Override
-            public void adjustmentValueChanged(AdjustmentEvent e) {
-              listener.valueAdjusted(e.getValue());
-            }
-          });
+        new AdjustmentListener() {
+          @Override
+          public void adjustmentValueChanged(AdjustmentEvent e) {
+            listener.valueAdjusted(e.getValue());
+          }
+        }
+      );
     }
 
     @Override
@@ -313,6 +331,7 @@ public class SwingUIFactory implements UIFactory {
   }
 
   private static class SwingTextArea extends SwingWidget implements HasText {
+
     private final JTextArea textArea;
     private final JScrollPane scrollPane;
 
@@ -348,6 +367,7 @@ public class SwingUIFactory implements UIFactory {
   }
 
   private static class SwingTextField extends SwingWidget implements HasText {
+
     private final JTextField textField;
 
     public SwingTextField() {
@@ -381,6 +401,7 @@ public class SwingUIFactory implements UIFactory {
   }
 
   private static class SwingPicture implements Picture {
+
     private final BufferedImage image;
     private final Graphics2D graphics;
 
@@ -440,6 +461,7 @@ public class SwingUIFactory implements UIFactory {
   }
 
   private static class SwingMenu extends SwingWidget implements Menu {
+
     private final JMenu menu;
 
     public SwingMenu(String label) {
@@ -464,6 +486,7 @@ public class SwingUIFactory implements UIFactory {
   }
 
   private static class SwingMenuItem extends SwingWidget implements MenuItem {
+
     private final JMenuItem menuItem;
 
     public SwingMenuItem(String label) {
@@ -473,12 +496,13 @@ public class SwingUIFactory implements UIFactory {
     @Override
     public void addItemListener(final MenuItemListener listener) {
       menuItem.addActionListener(
-          new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-              listener.itemClicked();
-            }
-          });
+        new ActionListener() {
+          @Override
+          public void actionPerformed(ActionEvent e) {
+            listener.itemClicked();
+          }
+        }
+      );
     }
 
     @Override
@@ -493,6 +517,7 @@ public class SwingUIFactory implements UIFactory {
   }
 
   private static class SwingWindow implements Window {
+
     private final JDialog dialog;
 
     public SwingWindow() {
@@ -517,7 +542,9 @@ public class SwingUIFactory implements UIFactory {
 
     @Override
     public void addChild(Widget child) {
-      dialog.getContentPane().add(((SwingWidget) child).getComponentOrScrollPane());
+      dialog
+        .getContentPane()
+        .add(((SwingWidget) child).getComponentOrScrollPane());
     }
 
     @Override
@@ -536,16 +563,18 @@ public class SwingUIFactory implements UIFactory {
     @Override
     public void addCloseListener(final CloseListener listener) {
       dialog.addWindowListener(
-          new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-              listener.windowClosed();
-            }
-          });
+        new WindowAdapter() {
+          @Override
+          public void windowClosing(WindowEvent e) {
+            listener.windowClosed();
+          }
+        }
+      );
     }
   }
 
   private static class SwingGridPanel extends SwingWidget implements GridPanel {
+
     private final JPanel panel;
 
     public SwingGridPanel(int rows, int columns) {
@@ -568,7 +597,10 @@ public class SwingUIFactory implements UIFactory {
     }
   }
 
-  private static class SwingBorderedPanel extends SwingWidget implements BorderedPanel {
+  private static class SwingBorderedPanel
+    extends SwingWidget
+    implements BorderedPanel {
+
     private final JPanel panel;
 
     public SwingBorderedPanel() {
@@ -577,27 +609,42 @@ public class SwingUIFactory implements UIFactory {
 
     @Override
     public void addToCenter(Widget widget) {
-      panel.add(BorderLayout.CENTER, ((SwingWidget) widget).getComponentOrScrollPane());
+      panel.add(
+        BorderLayout.CENTER,
+        ((SwingWidget) widget).getComponentOrScrollPane()
+      );
     }
 
     @Override
     public void addToNorth(Widget widget) {
-      panel.add(BorderLayout.NORTH, ((SwingWidget) widget).getComponentOrScrollPane());
+      panel.add(
+        BorderLayout.NORTH,
+        ((SwingWidget) widget).getComponentOrScrollPane()
+      );
     }
 
     @Override
     public void addToSouth(Widget widget) {
-      panel.add(BorderLayout.SOUTH, ((SwingWidget) widget).getComponentOrScrollPane());
+      panel.add(
+        BorderLayout.SOUTH,
+        ((SwingWidget) widget).getComponentOrScrollPane()
+      );
     }
 
     @Override
     public void addToEast(Widget widget) {
-      panel.add(BorderLayout.EAST, ((SwingWidget) widget).getComponentOrScrollPane());
+      panel.add(
+        BorderLayout.EAST,
+        ((SwingWidget) widget).getComponentOrScrollPane()
+      );
     }
 
     @Override
     public void addToWest(Widget widget) {
-      panel.add(BorderLayout.WEST, ((SwingWidget) widget).getComponentOrScrollPane());
+      panel.add(
+        BorderLayout.WEST,
+        ((SwingWidget) widget).getComponentOrScrollPane()
+      );
     }
 
     @Override

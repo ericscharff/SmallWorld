@@ -1,6 +1,7 @@
 package smallworld.core;
 
 class Sema {
+
   private boolean hasBeenSet = false;
   private SmallObject value;
 

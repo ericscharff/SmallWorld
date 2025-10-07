@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 class ImageReader {
+
   private final DataInputStream in;
   private int smallIntCount;
   private SmallObject[] objectPool;

@@ -1,6 +1,7 @@
 package smallworld.core;
 
 class SmallByteArray extends SmallObject {
+
   public byte[] values;
 
   public SmallByteArray(SmallObject cl, int size) {

@@ -10,6 +10,7 @@ import smallworld.ui.Window;
 import smallworld.ui.swing.SwingUIFactory;
 
 public class SmallWorld {
+
   private boolean done = false;
   private final SmallInterpreter theInterpreter;
   private final HasText output;
@@ -29,12 +30,13 @@ public class SmallWorld {
     world.setTitle("SmallWorld");
     world.setSize(200, 150);
     world.addCloseListener(
-        new Window.CloseListener() {
-          @Override
-          public void windowClosed() {
-            System.exit(0);
-          }
-        });
+      new Window.CloseListener() {
+        @Override
+        public void windowClosed() {
+          System.exit(0);
+        }
+      }
+    );
     world.addChild(buildPanel(factory));
 
     // now read the image
@@ -64,13 +66,14 @@ public class SmallWorld {
     Button quitButton = factory.makeButton("quit");
     p.addChild(quitButton);
     quitButton.addButtonListener(
-        new Button.ButtonListener() {
-          @Override
-          public void buttonClicked() {
-            // maybe later do something more intelligent
-            System.exit(0);
-          }
-        });
+      new Button.ButtonListener() {
+        @Override
+        public void buttonClicked() {
+          // maybe later do something more intelligent
+          System.exit(0);
+        }
+      }
+    );
     p.addChild(output);
     return p;
   }
@@ -90,6 +93,7 @@ public class SmallWorld {
   }
 
   private class doItListener implements Button.ButtonListener {
+
     private final String task;
 
     public doItListener(String t) {
@@ -121,7 +125,11 @@ public class SmallWorld {
         SmallByteArray rec = new SmallByteArray(StringClass, task);
         SmallObject args = new SmallObject(theInterpreter.ArrayClass, 1);
         args.data[0] = rec;
-        SmallObject ctx = theInterpreter.buildContext(theInterpreter.nilObject, args, doItMethod);
+        SmallObject ctx = theInterpreter.buildContext(
+          theInterpreter.nilObject,
+          args,
+          doItMethod
+        );
         try {
           theInterpreter.execute(ctx, null, null);
         } catch (Exception ex) {

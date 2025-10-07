@@ -349,7 +349,9 @@ public class NoOpUIFactory implements UIFactory {
     }
   }
 
-  private static class NoOpBorderedPanel extends NoOpWidget implements BorderedPanel {
+  private static class NoOpBorderedPanel
+    extends NoOpWidget
+    implements BorderedPanel {
 
     public NoOpBorderedPanel() {
       log("NoOpBorderedPanel()");
