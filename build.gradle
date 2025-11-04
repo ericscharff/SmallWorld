@@ -1,0 +1,15 @@
+plugins {
+  id 'application'
+}
+
+application {
+  // Run the REPL
+  // mainClass = 'smallworld.core.Runner'
+
+  // Run the gui
+  mainClass = 'smallworld.core.SmallWorld'
+}
+
+run {
+  standardInput = System.in
+}
