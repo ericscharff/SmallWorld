@@ -1,5 +1,3 @@
-# Happy 2026
-
 # SmallWorld
 
 SmallWorld is a very simple Smalltalk Virtual Machine written in Java. It is
