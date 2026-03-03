@@ -13,7 +13,7 @@ This version extends the original in several ways:
 - The Smalltalk classes are in plain text files for easier browsing. These were
   extracted from the main image using `Class>>fileOut`. Also included are some
   classes (related to the compiler) which are in the image, but not listed in
-  the main class browser (they were probably explicitly removed.)
+  the main class browser (they were probably explicitly hidden.)
 - Code has been reformatted, and warnings/deprecation reduced.
 
 # Running SmallWorld
