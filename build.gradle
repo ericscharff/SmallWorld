@@ -2,7 +2,6 @@ plugins {
   id 'application'
 }
 
-
 application {
   // Run the REPL
   // mainClass = 'smallworld.core.Runner'
