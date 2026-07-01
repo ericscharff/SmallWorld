@@ -6,6 +6,6 @@ public interface Slider extends Widget {
   int getValue();
 
   interface ValueAdjustedListener {
-    void valueAdjusted(int newValu);
+    void valueAdjusted(int newValue);
   }
 }
